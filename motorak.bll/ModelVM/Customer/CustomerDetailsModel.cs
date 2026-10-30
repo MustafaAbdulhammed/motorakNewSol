@@ -13,7 +13,5 @@ namespace Motorak.BLL.ModelVM.Customer
         public DateTime? DeletedAt { get; set; }
         public bool IsUpdated { get; set; }
         public DateTime UpdatedAt { get; set; }
-        //public List<CarSummaryViewModel> PurchasedCars { get; set; }
-        //public List<CarSummaryViewModel> RentedCars { get; set; }
     }
 }

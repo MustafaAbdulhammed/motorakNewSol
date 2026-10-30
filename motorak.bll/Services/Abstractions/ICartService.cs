@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using motorak.bll.ModelVM.ShoppingCart;
 using motorak.dal.Enums.CartEnums;
 
 namespace motorak.bll.Services.Abstractions

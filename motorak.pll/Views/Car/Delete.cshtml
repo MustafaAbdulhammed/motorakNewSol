@@ -1,0 +1,152 @@
+﻿﻿@using Motorak.BLL.ModelVM.Car
+
+@model CarDetailsModel
+@{
+    ViewData["Title"] = $"Delete {Model.Brand} {Model.Model}";
+}
+<link rel="stylesheet" href="~/css/car.css">
+
+<div class="delete-car-container">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
+                <div class="delete-card">
+                    <div class="delete-card-header">
+                        <h3 class="mb-0">
+                            <i class="ri-delete-bin-line me-2"></i>
+                            Confirm Delete
+                        </h3>
+                        <p class="mb-0 mt-2 opacity-75">This action cannot be undone</p>
+                    </div>
+                    <div class="delete-card-body">
+                        <div class="warning-icon">
+                            <i class="ri-error-warning-line"></i>
+                        </div>
+
+                        <h4 class="text-danger mb-3">
+                            Are you sure you want to delete this car?
+                        </h4>
+
+                        <p class="text-muted mb-4">
+                            You are about to permanently delete the following vehicle from the system.
+                            This action cannot be reversed.
+                        </p>
+                        <div class="car-info">
+                            <div class="car-image-container">
+                                <img src="@Url.Content("~/" + (@Model.ImagePath ?? "assets/img/default-car.jpg"))"
+                                     alt="@Model.Brand @Model.Model"
+                                     class="featured__img car-image">
+                            </div>
+                            <h5>
+                                <i class="ri-car-line"></i>
+                                Vehicle Information
+                            </h5>
+
+                            <div class="info-row">x 
+                                <span class="info-label">
+                                    <i class="ri-hashtag"></i>
+                                    ID
+                                </span>
+                                <span class="info-value">#@Model.Id</span>
+                            </div>
+
+                            <div class="info-row">
+                                <span class="info-label">
+                                    <i class="ri-car-line"></i>
+                                    Vehicle
+                                </span>
+                                <span class="info-value">@Model.Brand @Model.Model (@Model.Year)</span>
+                            </div>
+
+                            <div class="info-row">
+                                <span class="info-label">
+                                    <i class="ri-palette-line"></i>
+                                    Color
+                                </span>
+                                <span class="info-value">@Model.Color</span>
+                            </div>
+
+                            <div class="info-row">
+                                <span class="info-label">
+                                    <i class="ri-dashboard-line"></i>
+                                    Mileage
+                                </span>
+                                <span class="info-value">@Model.Mileage.ToString("N0") miles</span>
+                            </div>
+
+                            <div class="info-row">
+                                <span class="info-label">
+                                    <i class="ri-money-dollar-circle-line"></i>
+                                    Price
+                                </span>
+                                <span class="info-value">$@Model.Price.ToString("N0")</span>
+                            </div>
+
+                            <div class="info-row">
+                                <span class="info-label">
+                                    <i class="ri-shield-check-line"></i>
+                                    Condition
+                                </span>
+                                <span class="info-value">@Model.Condition</span>
+                            </div>
+
+                            <div class="info-row">
+                                <span class="info-label">
+                                    <i class="ri-price-tag-3-line"></i>
+                                    Category
+                                </span>
+                                <span class="info-value">@Model.Category</span>
+                            </div>
+
+                            @if (!string.IsNullOrEmpty(Model.OwnerName))
+                            {
+                                <div class="info-row">
+                                    <span class="info-label">
+                                        <i class="ri-user-line"></i>
+                                        Owner
+                                    </span>
+                                    <span class="info-value">@Model.OwnerName</span>
+                                </div>
+                            }
+                        </div>
+
+                        <div class="warning-message">
+                            <h6>
+                                <i class="ri-alert-line"></i>
+                                Warning - This will also:
+                            </h6>
+                            <ul>
+                                <li>Remove all associated rental history</li>
+                                <li>Cancel any pending reservations</li>
+                                <li>Delete uploaded images and documents</li>
+                                <li>Remove from customer wishlists and cart items</li>
+                                <li>Update inventory reports and statistics</li>
+                            </ul>
+                        </div>
+
+                        <div class="action-buttons">
+                            <a asp-action="Index" class="btn-secondary">
+                                <i class="ri-arrow-left-line"></i>
+                                Cancel
+                            </a>
+                            <a asp-action="Details" asp-route-id="@Model.Id" class="btn-success">
+                                <i class="ri-eye-line"></i>
+                                View Details
+                            </a>
+                            <form asp-action="Delete" asp-route-id="@Model.Id" method="post" style="display: inline;">
+                                @Html.AntiForgeryToken()
+                                <button type="submit" class="btn-danger" onclick="return confirmDelete()">
+                                    <i class="ri-delete-bin-line"></i>
+                                    Delete Permanently
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+@section Scripts {
+    <script src="~/js/Car/delete.js"></script>
+}

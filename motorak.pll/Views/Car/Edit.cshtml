@@ -1,0 +1,214 @@
+﻿﻿@using Motorak.BLL.ModelVM.Car
+@using Motorak.DAL.Enums.CarEnums
+@using motorak.dal.Enums.CarEnums
+
+@model EditCarModel
+@{
+    ViewData["Title"] = $"Edit {Model.Brand} {Model.Model}";
+}
+<link rel="stylesheet" href="~/css/car.css">
+<div class="edit-car-container">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
+                <div class="form-card">
+                    <div class="form-card-header">
+                        <h3 class="mb-0">
+                            <i class="ri-edit-line me-2"></i>
+                            Edit Car Details
+                        </h3>
+                        <p class="mb-0 mt-2 opacity-75">Update the information for this vehicle</p>
+                    </div>
+                    <div class="form-card-body">
+                        <div class="car-info-header">
+                            <h6>
+                                <i class="ri-information-line me-2"></i>
+                                Currently Editing
+                            </h6>
+                            <p>
+                                <strong>@Model.Brand @Model.Model (@Model.Year)</strong> - ID: @Model.Id
+                            </p>
+                        </div>
+
+                        @if (!ViewData.ModelState.IsValid)
+                        {
+                            <div class="validation-summary">
+                                <h6><i class="ri-error-warning-line me-2"></i>Please correct the following errors:</h6>
+                                <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                            </div>
+                        }
+
+                        <form asp-action="Edit" method="post" enctype="multipart/form-data">
+                            @Html.AntiForgeryToken()
+                            <input asp-for="Id" type="hidden" />
+                            <input asp-for="Status" type="hidden" />
+                            <input asp-for="Category" type="hidden" />
+                            <input asp-for="DailyRentPrice" type="hidden" />
+                            <input asp-for="ImagePath" type="hidden" />
+
+                            <div class="input-group">
+                                <div class="form-group">
+                                    <label asp-for="Brand" class="form-label">
+                                        <i class="ri-car-line"></i>
+                                        Brand
+                                    </label>
+                                    <input asp-for="Brand" class="form-control" placeholder="Enter car brand" required />
+                                    <span asp-validation-for="Brand" class="text-danger"></span>
+                                </div>
+                                <div class="form-group">
+                                    <label asp-for="Model" class="form-label">
+                                        <i class="ri-roadster-line"></i>
+                                        Model
+                                    </label>
+                                    <input asp-for="Model" class="form-control" placeholder="Enter car model" required />
+                                    <span asp-validation-for="Model" class="text-danger"></span>
+                                </div>
+                            </div>
+
+                            <div class="input-group">
+                                <div class="form-group">
+                                    <label asp-for="Year" class="form-label">
+                                        <i class="ri-calendar-line"></i>
+                                        Year
+                                    </label>
+                                    <input asp-for="Year" class="form-control" type="number" min="1900" max="2030" placeholder="Enter year" required />
+                                    <span asp-validation-for="Year" class="text-danger"></span>
+                                </div>
+                                <div class="form-group">
+                                    <label asp-for="Color" class="form-label">
+                                        <i class="ri-palette-line"></i>
+                                        Color
+                                    </label>
+                                    <input asp-for="Color" class="form-control" placeholder="Enter color" required />
+                                    <span asp-validation-for="Color" class="text-danger"></span>
+                                </div>
+                            </div>
+
+                            <div class="input-group">
+                                <div class="form-group">
+                                    <label asp-for="Mileage" class="form-label">
+                                        <i class="ri-dashboard-line"></i>
+                                        Mileage
+                                    </label>
+                                    <input asp-for="Mileage" class="form-control" type="number" min="0" placeholder="Enter mileage" required />
+                                    <span asp-validation-for="Mileage" class="text-danger"></span>
+                                </div>
+                                <div class="form-group">
+                                    <label asp-for="Price" class="form-label">
+                                        <i class="ri-money-dollar-circle-line"></i>
+                                        Price ($)
+                                    </label>
+                                    <input asp-for="Price" class="form-control" type="number" min="0" step="0.01" placeholder="Enter price" required />
+                                    <span asp-validation-for="Price" class="text-danger"></span>
+                                </div>
+                            </div>
+
+                            <div class="input-group">
+                                <div class="form-group">
+                                    <label asp-for="Condition" class="form-label">
+                                        <i class="ri-shield-check-line"></i>
+                                        Condition
+                                    </label>
+                                    <select asp-for="Condition" class="form-select" required>
+                                        <option value="">Select Condition</option>
+                                        @foreach (CarCondition condition in Enum.GetValues<CarCondition>())
+                                        {
+                                            <option value="@condition" selected="@(Model.Condition == condition)">@condition</option>
+                                        }
+                                    </select>
+                                    <span asp-validation-for="Condition" class="text-danger"></span>
+                                </div>
+                                <div class="form-group">
+                                    <label asp-for="Transmission" class="form-label">
+                                        <i class="ri-settings-line"></i>
+                                        Transmission
+                                    </label>
+                                    <select asp-for="Transmission" class="form-select" required>
+                                        <option value="">Select Transmission</option>
+                                        @foreach (CarTransmission transmission in Enum.GetValues<CarTransmission>())
+                                        {
+                                            <option value="@transmission" selected="@(Model.Transmission == transmission)">@transmission</option>
+                                        }
+                                    </select>
+                                    <span asp-validation-for="Transmission" class="text-danger"></span>
+                                </div>
+                            </div>
+
+                            <div class="input-group">
+                                <div class="form-group">
+                                    <label asp-for="Type" class="form-label">
+                                        <i class="ri-car-washing-line"></i>
+                                        Car Type
+                                    </label>
+                                    <select asp-for="Type" class="form-select" required>
+                                        <option value="">Select Car Type</option>
+                                        @foreach (CarType type in Enum.GetValues<CarType>())
+                                        {
+                                            <option value="@type" selected="@(Model.Type == type)">@type</option>
+                                        }
+                                    </select>
+                                    <span asp-validation-for="Type" class="text-danger"></span>
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">
+                                        <i class="ri-price-tag-3-line"></i>
+                                        Category
+                                    </label>
+                                    <div class="current-value">
+                                        <i class="ri-information-line me-1"></i>
+                                        Current: @Model.Category (cannot be changed during edit)
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label class="form-label">
+                                    <i class="ri-calendar-check-line"></i>
+                                    Daily Rent Price ($)
+                                </label>
+                                <div class="current-value">
+                                    <i class="ri-information-line me-1"></i>
+                                    Current: @(Model.DailyRentPrice?.ToString("C") ?? "Not set") (managed separately)
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="imageFile" class="form-label">
+                                    <i class="ri-image-line"></i>
+                                    Update Car Image
+                                </label>
+                                <input type="file" name="imageFile" id="imageFile" class="form-control" accept="image/*" />
+                                <small class="text-muted">Upload a new image to replace the current one (optional)</small>
+                                @if (!string.IsNullOrEmpty(Model.ImagePath))
+                                {
+                                    <div class="current-value mt-2">
+                                        <i class="ri-image-line me-1"></i>
+                                        Current image: @Model.ImagePath
+                                    </div>
+                                }
+                            </div>
+
+                            <div class="action-buttons">
+                                <a asp-action="Details" asp-route-id="@Model.Id" class="btn-info">
+                                    <i class="ri-eye-line"></i>
+                                    View Details
+                                </a>
+                                <a asp-action="Index" class="btn-secondary">
+                                    <i class="ri-arrow-left-line"></i>
+                                    Cancel
+                                </a>
+                                <button type="submit" class="btn-warning">
+                                    <i class="ri-save-line"></i>
+                                    Update Car
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+@section Scripts{
+	<script src="~/js/Car/edit.js"></script>
+}

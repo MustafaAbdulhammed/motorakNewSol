@@ -1,4 +1,4 @@
-﻿
+﻿<!-- Add to Cart Modal -->
 <div class="modal fade" id="addToCartModal" tabindex="-1">
     <div class="modal-dialog">
         <div class="modal-content">
@@ -10,127 +10,89 @@
             </div>
             <div class="modal-body">
                 <form id="addToCartForm">
-                    @Html.AntiForgeryToken()
+                    <input type="hidden" id="modalCarId" />
+                    <input type="hidden" id="modalCategory" />
 
                     <div class="form-group">
                         <label>Action:</label>
-                        <div class="btn-group btn-group-toggle w-100" data-toggle="buttons">
-                            <label class="btn btn-outline-success active">
-                                <input type="radio" name="itemType" value="Buy" checked>
-                                <i class="fas fa-shopping-cart"></i> Buy
+                        <div>
+                            <label class="form-check-label">
+                                <input type="radio" name="itemType" value="Buy" class="form-check-input" checked> Buy
                             </label>
-                            <label class="btn btn-outline-info">
-                                <input type="radio" name="itemType" value="Rent">
-                                <i class="fas fa-calendar-alt"></i> Rent
+                            <label class="form-check-label ml-3">
+                                <input type="radio" name="itemType" value="Rent" class="form-check-input"> Rent
                             </label>
                         </div>
                     </div>
 
-                    <div id="rentDatesSection" style="display: none;">
-                        <div class="row">
-                            <div class="col-6">
-                                <div class="form-group">
-                                    <label>Start Date:</label>
-                                    <input type="date" class="form-control" id="rentStartDate"
-                                           min="@DateTime.Now.ToString("yyyy-MM-dd")">
-                                </div>
-                            </div>
-                            <div class="col-6">
-                                <div class="form-group">
-                                    <label>End Date:</label>
-                                    <input type="date" class="form-control" id="rentEndDate"
-                                           min="@DateTime.Now.AddDays(1).ToString("yyyy-MM-dd")">
-                                </div>
-                            </div>
+                    <div id="rentDates" style="display: none;">
+                        <div class="form-group">
+                            <label>Start Date:</label>
+                            <input type="date" id="startDate" class="form-control" />
                         </div>
-                        <div class="alert alert-info">
-                            <small>
-                                <i class="fas fa-info-circle"></i>
-                                Rental duration: <span id="rentalDays">1</span> day(s)
-                            </small>
+                        <div class="form-group">
+                            <label>End Date:</label>
+                            <input type="date" id="endDate" class="form-control" />
                         </div>
                     </div>
-
-                    <input type="hidden" id="modalCarId" value="">
                 </form>
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
-                <button type="button" class="btn btn-primary" onclick="submitAddToCart()">
-                    <i class="fas fa-cart-plus"></i> Add to Cart
-                </button>
+                <button type="button" class="btn btn-primary" onclick="submitAddToCart()">Add to Cart</button>
             </div>
         </div>
     </div>
 </div>
 
 <script>
-
     function showAddToCartModal(carId, category) {
-        document.getElementById('modalCarId').value = carId;
+        $('#modalCarId').val(carId);
+        $('#modalCategory').val(category);
 
-        const rentOption = document.querySelector('input[value="Rent"]').closest('label');
-        const buyOption = document.querySelector('input[value="Buy"]').closest('label');
-
-        if (category === 'ForRent') {
-            buyOption.style.display = 'none';
-            rentOption.style.display = 'block';
-            document.querySelector('input[value="Rent"]').checked = true;
-            toggleRentSection();
-        } else if (category === 'ForSale') {
-            rentOption.style.display = 'none';
-            buyOption.style.display = 'block';
-            document.querySelector('input[value="Buy"]').checked = true;
-            toggleRentSection();
+        // Show/hide rent options based on category
+        if (category === 'ForRent' || category === 'Both') {
+            $('input[name="itemType"][value="Rent"]').prop('disabled', false);
         } else {
+            $('input[name="itemType"][value="Rent"]').prop('disabled', true);
+        }
 
-            rentOption.style.display = 'block';
-            buyOption.style.display = 'block';
-            document.querySelector('input[value="Buy"]').checked = true;
-            toggleRentSection();
+        if (category === 'ForSale' || category === 'Both') {
+            $('input[name="itemType"][value="Buy"]').prop('disabled', false);
+        } else {
+            $('input[name="itemType"][value="Buy"]').prop('disabled', true);
         }
 
         $('#addToCartModal').modal('show');
     }
 
+    $('input[name="itemType"]').change(function() {
+        if ($(this).val() === 'Rent') {
+            $('#rentDates').show();
+            $('#startDate').val(new Date().toISOString().split('T')[0]);
+            $('#endDate').val(new Date(Date.now() + 86400000).toISOString().split('T')[0]);
+        } else {
+            $('#rentDates').hide();
+        }
+    });
+
     async function submitAddToCart() {
-        const carId = parseInt(document.getElementById('modalCarId').value);
-        const itemType = document.querySelector('input[name="itemType"]:checked').value;
+        const carId = $('#modalCarId').val();
+        const itemType = $('input[name="itemType"]:checked').val();
+        const startDate = itemType === 'Rent' ? $('#startDate').val() : null;
+        const endDate = itemType === 'Rent' ? $('#endDate').val() : null;
 
-        let startDate = null;
-        let endDate = null;
-
-        if (itemType === 'Rent') {
-            startDate = document.getElementById('rentStartDate').value;
-            endDate = document.getElementById('rentEndDate').value;
-
-            if (!startDate || !endDate) {
-                showNotification('Please select rental dates', 'error');
-                return;
-            }
-
-            if (new Date(endDate) <= new Date(startDate)) {
-                showNotification('End date must be after start date', 'error');
-                return;
-            }
-        }
-
-        const success = await addToCartAsync(carId, itemType, startDate, endDate);
-        if (success) {
-            $('#addToCartModal').modal('hide');
-        }
-    }
-
-    async function addToCartAsync(carId, itemType, startDate = null, endDate = null) {
         try {
+            const token = document.querySelector('input[name="__RequestVerificationToken"]').value;
+
             const response = await fetch('/Cart/AddToCart', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]').value
+                    'RequestVerificationToken': token
                 },
                 body: JSON.stringify({
-                    carId: carId,
+                    carId: parseInt(carId),
                     itemType: itemType,
                     startDate: startDate,
                     endDate: endDate
@@ -140,59 +102,15 @@
             const result = await response.json();
 
             if (result.success) {
+                $('#addToCartModal').modal('hide');
                 showNotification('Item added to cart successfully!', 'success');
                 updateCartCount();
-                return true;
             } else {
                 showNotification(result.message, 'error');
-                return false;
             }
         } catch (error) {
+            console.error('Error:', error);
             showNotification('Error adding item to cart', 'error');
-            return false;
         }
     }
-
-    function toggleRentSection() {
-        const rentSection = document.getElementById('rentDatesSection');
-        const selectedType = document.querySelector('input[name="itemType"]:checked')?.value;
-
-        if (selectedType === 'Rent') {
-            rentSection.style.display = 'block';
-            updateRentalDays();
-        } else {
-            rentSection.style.display = 'none';
-        }
-    }
-
-    function updateRentalDays() {
-        const startDate = new Date(document.getElementById('rentStartDate').value);
-        const endDate = new Date(document.getElementById('rentEndDate').value);
-
-        if (startDate && endDate && endDate > startDate) {
-            const days = Math.ceil((endDate - startDate) / (1000 * 60 * 60 * 24));
-            document.getElementById('rentalDays').textContent = days;
-        } else {
-            document.getElementById('rentalDays').textContent = '1';
-        }
-    }
-
-    document.addEventListener('DOMContentLoaded', function() {
-
-        document.querySelectorAll('input[name="itemType"]').forEach(radio => {
-            radio.addEventListener('change', toggleRentSection);
-        });
-
-        const startDateInput = document.getElementById('rentStartDate');
-        const endDateInput = document.getElementById('rentEndDate');
-
-        if (startDateInput) startDateInput.addEventListener('change', updateRentalDays);
-        if (endDateInput) endDateInput.addEventListener('change', updateRentalDays);
-
-        const today = new Date().toISOString().split('T')[0];
-        const tomorrow = new Date(Date.now() + 86400000).toISOString().split('T')[0];
-
-        if (startDateInput) startDateInput.value = today;
-        if (endDateInput) endDateInput.value = tomorrow;
-    });
 </script>

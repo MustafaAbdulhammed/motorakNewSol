@@ -1,12 +1,21 @@
-﻿@model List<Motorak.BLL.ModelVM.Car.CarListModel>
-@using Motorak.DAL.Enums.CarEnums
+﻿@using Microsoft.AspNetCore.Identity
+@using Motorak.DAL.Entites
+@using motorak.dal.Entites
 @using motorak.dal.Enums.CarEnums
+@using Motorak.DAL.Enums.CarEnums
+@using Motorak.BLL.ModelVM.Car
+
+@inject SignInManager<User> SignInManager
+@inject UserManager<User> UserManager
+
+@model List<CarListModel>
 
 @{
     ViewData["Title"] = "Available Cars";
     Layout = "_MotorakIndex";
     var carsList = Model ?? new List<Motorak.BLL.ModelVM.Car.CarListModel>();
 }
+<link rel="stylesheet" href="~/css/car.css">
 
 <style>
     :root {

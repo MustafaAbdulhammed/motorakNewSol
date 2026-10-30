@@ -361,3 +361,7 @@ MigrationBackup/
 
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
+/motorak.pll/Controllers/AdminController.cs
+/motorak.pll/Controllers/CartController.cs
+/motorak.pll/Views/Admin
+/motorak.pll/Views/Shared/_AdminLayout.cshtml

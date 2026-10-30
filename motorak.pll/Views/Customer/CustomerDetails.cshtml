@@ -1,66 +1,230 @@
 ﻿@using Motorak.BLL.ModelVM.Customer
 @model CustomerDetailsModel
+@{
+    ViewData["Title"] = "Customer Details";
+    Layout = "_MotorakIndex";
+}
 
-<style>
-    .table-darkpurple {
-        background-color: #2a0044; /* darker purple for table */
-        color: white;
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/remixicon/3.4.0/remixicon.css" rel="stylesheet">
+    <link rel="stylesheet" href="~/css/Manage.css">
+    </style>
+</head>
+
+<body>
+    <section class="customers-section">
+        <div class="container">
+            <!-- Header -->
+            <div class="section-header">
+                <div class="header-content">
+                    <h1 class="section-title">
+                        <i class="ri-user-line"></i>
+                        Customer Details
+                    </h1>
+                    <p class="section-subtitle">View detailed information about @Model.Name</p>
+                </div>
+                <div class="header-actions">
+                    <a asp-action="Index" class="btn-secondary">
+                        <i class="ri-arrow-left-line"></i>
+                        Back to List
+                    </a>
+                    @if (!Model.IsDeleted)
+                    {
+                        <a asp-action="Edit" asp-route-id="@Model.Id" class="btn-primary">
+                            <i class="ri-edit-line"></i>
+                            Edit Customer
+                        </a>
+                    }
+                </div>
+            </div>
+
+            <!-- Customer Profile Card -->
+            <div class="customer-card" style="max-width: 800px; margin: 0 auto;">
+                <div class="card-header">
+                    <div class="customer-avatar" style="width: 60px; height: 60px; font-size: 1.5rem;">
+                        @Model.Name.First().ToString().ToUpper()
+                    </div>
+                    <div class="customer-info">
+                        <h3 class="customer-name" style="font-size: 1.5rem;">@Model.Name</h3>
+                        <p class="customer-email" style="font-size: 1rem;">@Model.Email</p>
+
+                        <!-- Status Badges -->
+                        @if (Model.IsDeleted)
+                        {
+                            <div class="status-badge status-deleted">
+                                <i class="ri-close-circle-line"></i>
+                                Deleted Account
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="status-badge status-active">
+                                <i class="ri-check-circle-line"></i>
+                                Active Account
+                            </div>
+                        }
+
+                        @if (Model.IsUpdated)
+                        {
+                            <div class="status-badge status-updated">
+                                <i class="ri-edit-line"></i>
+                                Recently Updated
+                            </div>
+                        }
+                    </div>
+                </div>
+
+                <div class="card-content">
+                    <!-- Details Grid -->
+                    <div class="details-grid">
+                        <!-- Contact Information -->
+                        <div class="detail-section">
+                            <div class="detail-title">
+                                <i class="ri-contacts-line"></i>
+                                Contact Information
+                            </div>
+                            <div class="info-item">
+                                <i class="ri-mail-line"></i>
+                                <div>
+                                    <strong>Email:</strong><br>
+                                    <span class="detail-value">@Model.Email</span>
+                                </div>
+                            </div>
+                            <div class="info-item">
+                                <i class="ri-phone-line"></i>
+                                <div>
+                                    <strong>Phone:</strong><br>
+                                    <span class="detail-value">@(Model.PhoneNumber ?? "Not provided")</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Account Statistics -->
+                        <div class="detail-section">
+                            <div class="detail-title">
+                                <i class="ri-bar-chart-line"></i>
+                                Account Statistics
+                            </div>
+                            <div class="info-item">
+                                <i class="ri-shopping-bag-line"></i>
+                                <div>
+                                    <strong>Cars Purchased:</strong><br>
+                                    <span class="detail-value">@Model.PurchasedCarsCount</span>
+                                </div>
+                            </div>
+                            <div class="info-item">
+                                <i class="ri-user-line"></i>
+                                <div>
+                                    <strong>Customer ID:</strong><br>
+                                    <span class="detail-value">#@Model.Id</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Account Timeline -->
+                        <div class="detail-section">
+                            <div class="detail-title">
+                                <i class="ri-time-line"></i>
+                                Account Timeline
+                            </div>
+                            <div class="info-item">
+                                <i class="ri-calendar-line"></i>
+                                <div>
+                                    <strong>Created:</strong><br>
+                                    <span class="detail-value">@Model.CreatedAt.ToString("MMMM dd, yyyy 'at' hh:mm tt")</span>
+                                </div>
+                            </div>
+                            @if (Model.IsUpdated)
+                            {
+                                <div class="info-item">
+                                    <i class="ri-edit-line"></i>
+                                    <div>
+                                        <strong>Last Updated:</strong><br>
+                                        <span class="detail-value">@Model.UpdatedAt.ToString("MMMM dd, yyyy 'at' hh:mm tt")</span>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+
+                        <!-- Account Status -->
+                        <div class="detail-section">
+                            <div class="detail-title">
+                                <i class="ri-shield-user-line"></i>
+                                Account Status
+                            </div>
+                            <div class="info-item">
+                                <i class="ri-checkbox-circle-line"></i>
+                                <div>
+                                    <strong>Status:</strong><br>
+                                    <span class="detail-value">@(Model.IsDeleted ? "Deleted" : "Active")</span>
+                                </div>
+                            </div>
+                            @if (Model.IsDeleted && Model.DeletedAt.HasValue)
+                            {
+                                <div class="info-item">
+                                    <i class="ri-delete-bin-line"></i>
+                                    <div>
+                                        <strong>Deleted On:</strong><br>
+                                        <span class="detail-value">@Model.DeletedAt.Value.ToString("MMMM dd, yyyy 'at' hh:mm tt")</span>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="card-actions" style="justify-content: center; gap: 1rem;">
+                    <a asp-action="Index" class="action-btn view-btn">
+                        <i class="ri-list-check"></i> Back to List
+                    </a>
+                    @if (!Model.IsDeleted)
+                    {
+                        <a asp-action="Edit" asp-route-id="@Model.Id" class="action-btn edit-btn">
+                            <i class="ri-edit-line"></i> Edit Customer
+                        </a>
+                        <button class="action-btn delete-btn" onclick="deleteCustomer(@Model.Id)">
+                            <i class="ri-delete-bin-line"></i> Delete Customer
+                        </button>
+                    }
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Delete Confirmation Modal -->
+    <div id="deleteModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3><i class="ri-error-warning-line"></i> Confirm Deletion</h3>
+                <span class="close" onclick="closeDeleteModal()">&times;</span>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure you want to delete <strong>@Model.Name</strong>? This action will mark the customer as deleted but can be restored later.</p>
+                <div class="modal-actions">
+                    <button class="btn-secondary" onclick="closeDeleteModal()">Cancel</button>
+                    <button class="btn-danger" id="confirmDeleteBtn">Delete Customer</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Notification -->
+    <div id="notification" class="notification">
+        <div class="notification-content">
+            <i class="ri-check-line"></i>
+            <span id="notification-message">Success!</span>
+        </div>
+    </div>
+
+    <!-- Anti-forgery token for AJAX requests -->
+    @Html.AntiForgeryToken()
+
+    @section Scripts {
+        <script src="~/js/Manage/common.js"></script>
+        <script src="~/js/Manage/details.js"></script>
     }
 
-        .table-darkpurple thead th {
-            background-color: #4b007d; /* header color */
-        }
-
-        .table-darkpurple tbody tr:nth-child(even) {
-            background-color: #35005c; /* alternate row color */
-        }
-
-        .table-darkpurple tbody tr:hover {
-            background-color: #5a00a3; /* hover effect */
-        }
-</style>
-
-<h1>Customer Data</h1>
-
-
-<table class="table table-striped table-darkpurple" >
-    <input type="hidden" asp-for="Id">
-    <thead>
-        <tr>
-            <th>Id</th>
-            <th>Name</th>
-            <th>Email</th>
-            <th>Purchased Cars Count</th>
-            <th>CreatedAt</th>
-            <th>IsDeleted</th>
-            <th>IsUpdated</th>
-        </tr>
-    </thead>
-    <tbody>
-        <tr>
-            <td>@Model.Id</td>
-            <td>@Model.Name</td>
-            <td>@Model.Email</td>
-            <td>@Model.PurchasedCarsCount</td>
-            <td>@Model.CreatedAt.ToString("dd/MM/yyyy")</td>
-            <td>@Model.IsDeleted</td>
-            <td>@Model.IsUpdated</td>
-            <td>
-                <a asp-controller="Customer" asp-action="Edit" asp-route-id="@Model.Id">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-pencil-square" viewBox="0 0 16 16">
-                        <path d="M15.502 1.94a.5.5 0 0 1 0 .706L14.459 3.69l-2-2L13.502.646a.5.5 0 0 1 .707 0l1.293 1.293zm-1.75 2.456-2-2L4.939 9.21a.5.5 0 0 0-.121.196l-.805 2.414a.25.25 0 0 0 .316.316l2.414-.805a.5.5 0 0 0 .196-.12l6.813-6.814z" />
-                        <path fill-rule="evenodd" d="M1 13.5A1.5 1.5 0 0 0 2.5 15h11a1.5 1.5 0 0 0 1.5-1.5v-6a.5.5 0 0 0-1 0v6a.5.5 0 0 1-.5.5h-11a.5.5 0 0 1-.5-.5v-11a.5.5 0 0 1 .5-.5H9a.5.5 0 0 0 0-1H2.5A1.5 1.5 0 0 0 1 2.5z" />
-                    </svg>
-                </a>
-            </td>
-            <td>
-                <a asp-controller="Customer" asp-action="Delete" asp-route-id="@Model.Id">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="red" class="bi bi-trash3" viewBox="0 0 16 16">
-                        <path d="M6.5 1h3a.5.5 0 0 1 .5.5v1H6v-1a.5.5 0 0 1 .5-.5M11 2.5v-1A1.5 1.5 0 0 0 9.5 0h-3A1.5 1.5 0 0 0 5 1.5v1H1.5a.5.5 0 0 0 0 1h.538l.853 10.66A2 2 0 0 0 4.885 16h6.23a2 2 0 0 0 1.994-1.84l.853-10.66h.538a.5.5 0 0 0 0-1zm1.958 1-.846 10.58a1 1 0 0 1-.997.92h-6.23a1 1 0 0 1-.997-.92L3.042 3.5zm-7.487 1a.5.5 0 0 1 .528.47l.5 8.5a.5.5 0 0 1-.998.06L5 5.03a.5.5 0 0 1 .47-.53Zm5.058 0a.5.5 0 0 1 .47.53l-.5 8.5a.5.5 0 1 1-.998-.06l.5-8.5a.5.5 0 0 1 .528-.47M8 4.5a.5.5 0 0 1 .5.5v8.5a.5.5 0 0 1-1 0V5a.5.5 0 0 1 .5-.5" />
-                    </svg>
-                </a>
-            </td>
-        </tr>
-    </tbody>
-</table>
-
+</body>

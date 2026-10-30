@@ -231,6 +231,8 @@ namespace Motorak.BLL.Services.Implementations
             }
             catch (Exception ex)
             {
+                Console.WriteLine($"Exception in UpdateCarAsync: {ex.Message}");
+                Console.WriteLine($"Stack trace: {ex.StackTrace}");
                 return (false, $"Failed to update car: {ex.Message}");
             }
         }

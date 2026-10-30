@@ -1,139 +1,204 @@
-﻿@using motorak.bll.ModelVM.ShoppingCart;
-@using motorak.dal.Enums.CartEnums;
-
-@model List<ShoppingCartVM>
+﻿@model List<Motorak.DAL.Entites.CartItem>
 @{
     ViewData["Title"] = "Shopping Cart";
+    Layout = "_MotorakIndex";
 }
 
-<div class="container mt-4">
-    <div class="row">
-        <div class="col-12">
-            <h2 class="mb-4">
-                <i class="fas fa-shopping-cart"></i> Your Shopping Cart
-                <span class="badge badge-primary ml-2" id="cart-count">@Model.Sum(c => c.Count)</span>
-            </h2>
-        </div>
-    </div>
+<head>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@3.2.0/fonts/remixicon.css" rel="stylesheet">
+    <link rel="stylesheet" href="~/css/cart.css">
+</head>
+<body>
+    <!-- Cart Index View -->
+    <div class="cart-container">
+        <div class="container">
+            <!-- Cart Header -->
+            <div class="cart-header">
+                <h2>
+                    <i class="ri-shopping-cart-2-line me-3"></i>
+                    Shopping Cart
+                </h2>
+                <p class="cart-subtitle">Review your selected vehicles before checkout</p>
+            </div>
 
-    @if (!Model.Any())
-    {
-        <div class="text-center py-5">
-            <i class="fas fa-shopping-cart fa-3x text-muted mb-3"></i>
-            <h4 class="text-muted">Your cart is empty</h4>
-            <p class="text-muted">Browse our cars and add items to your cart</p>
-            <a href="@Url.Action("Index", "Car")" class="btn btn-primary">Browse Cars</a>
-        </div>
-    }
-    else
-    {
-        <div class="row">
-            <div class="col-lg-8">
-                @foreach (var item in Model)
-                {
-                    <div class="card mb-3 cart-item" data-cart-id="@item.Id">
-                        <div class="card-body">
-                            <div class="row align-items-center">
-                                <div class="col-md-3">
-                                    <img src="@(item.ImagePath ?? "/images/default-car.jpg")"
-                                         class="img-fluid rounded" alt="@item.Brand @item.Model">
-                                </div>
-                                <div class="col-md-6">
-                                    <h5 class="card-title">@item.Brand @item.Model (@item.Year)</h5>
-                                    <p class="card-text">
-                                        <span class="badge badge-@(item.ItemType == CartItemType.Rent ? "info" : "success")">
-                                            @item.ItemType.ToString().ToUpper()
-                                        </span>
-                                    </p>
+            <!-- Display Messages -->
+            @if (TempData["Success"] != null)
+            {
+                <div class="alert alert-success alert-dismissible fade show" role="alert">
+                    <i class="ri-check-circle-line me-2"></i>@TempData["Success"]
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            }
 
-                                    @if (item.ItemType == CartItemType.Rent)
-                                    {
-                                        <div class="rent-details">
-                                            <small class="text-muted">
-                                                <i class="fas fa-calendar"></i>
-                                                @item.RentStartDate?.ToString("MM/dd/yyyy") - @item.RentEndDate?.ToString("MM/dd/yyyy")
-                                                (@item.RentDays days)
-                                            </small>
-                                            <div class="mt-2">
-                                                <input type="date" class="form-control form-control-sm rent-start"
-                                                       value="@item.RentStartDate?.ToString("yyyy-MM-dd")"
-                                                       onchange="updateRentDates(@item.Id, this.value, document.querySelector('[data-cart-id=@item.Id] .rent-end').value)">
-                                                <input type="date" class="form-control form-control-sm rent-end mt-1"
-                                                       value="@item.RentEndDate?.ToString("yyyy-MM-dd")"
-                                                       onchange="updateRentDates(@item.Id, document.querySelector('[data-cart-id=@item.Id] .rent-start').value, this.value)">
+            @if (TempData["Error"] != null)
+            {
+                <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                    <i class="ri-close-circle-line me-2"></i>@TempData["Error"]
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            }
+
+            @if (Model != null && Model.Any())
+            {
+                <div class="row">
+                    <div class="col-lg-8">
+                        <div id="cart-items-container">
+                            <div class="cart-card">
+                                @foreach (var item in Model)
+                                {
+                                    <div class="cart-item" data-item-id="@item.Id">
+                                        <div class="row align-items-center">
+                                            <div class="col-md-3 mb-3 mb-md-0">
+                                                <img src="@Url.Content("~/" + (@item.Car?.ImagePath ?? "assets/img/default-car.jpg"))"
+                             alt="@item.Car?.Brand @item.Car?.Model"
+                             class="featured__img car-image">
                                             </div>
-                                        </div>
-                                    }
-                                </div>
-                                <div class="col-md-3 text-right">
-                                    <div class="quantity-controls mb-2">
-                                        <div class="input-group input-group-sm">
-                                            <div class="input-group-prepend">
-                                                <button class="btn btn-outline-secondary" type="button"
-                                                        onclick="updateQuantity(@item.Id, @item.Count - 1)">
-                                                    <i class="fas fa-minus"></i>
-                                                </button>
+                                            <div class="col-md-5">
+                                                <div class="item-details">
+                                                    <h6>@item.Car?.Brand @item.Car?.Model</h6>
+                                                    <div class="item-meta">
+                                                        <i class="ri-calendar-line"></i>
+                                                        <span>@item.Car?.Year</span>
+                                                    </div>
+                                                    <div class="item-meta">
+                                                        <span class="item-type-badge @(item.ItemType.ToString().ToLower() == "buy" ? "badge-buy" : "badge-rent")">
+                                                            <i class="ri-@(item.ItemType.ToString().ToLower() == "buy" ? "shopping-cart" : "calendar")-line"></i>
+                                                            @item.ItemType.ToString()
+                                                        </span>
+                                                    </div>
+                                                </div>
                                             </div>
-                                            <input type="number" class="form-control text-center"
-                                                   value="@item.Count" min="1" max="10"
-                                                   onchange="updateQuantity(@item.Id, this.value)">
-                                            <div class="input-group-append">
-                                                <button class="btn btn-outline-secondary" type="button"
-                                                        onclick="updateQuantity(@item.Id, @item.Count + 1)">
-                                                    <i class="fas fa-plus"></i>
-                                                </button>
+                                            <div class="col-md-4">
+                                                <!-- Quantity Controls -->
+                                                <div class="quantity-controls">
+                                                    <button class="quantity-btn" onclick="updateQuantity(@item.Id, 'decrease')">-</button>
+                                                    <input type="number" class="quantity-input" value="@item.Count" 
+                                                           onchange="updateQuantity(@item.Id, 'set', this.value)" min="1">
+                                                    <button class="quantity-btn" onclick="updateQuantity(@item.Id, 'increase')">+</button>
+                                                </div>
+
+                                                @if (item.ItemType.ToString().ToLower() == "rent")
+                                                {
+                                                    <!-- Date Inputs for Rental Items -->
+                                                    <div class="date-inputs">
+                                                        <div class="date-input-group">
+                                                            <label>Start Date</label>
+                                                            <input type="date" class="start-date" 
+                                                                   value="@(item.RentStartDate?.ToString("yyyy-MM-dd"))" 
+                                                                   onchange="updateDates(@item.Id)">
+                                                        </div>
+                                                        <div class="date-input-group">
+                                                            <label>End Date</label>
+                                                            <input type="date" class="end-date" 
+                                                                   value="@(item.RentEndDate?.ToString("yyyy-MM-dd"))" 
+                                                                   onchange="updateDates(@item.Id)">
+                                                        </div>
+                                                    </div>
+                                                }
+
+                                                <div class="item-price">
+                                                    @if (item.ItemType.ToString().ToLower() == "buy")
+                                                    {
+                                                        @((item.Car?.Price * item.Count)?.ToString("C"))
+                                                    }
+                                                    else
+                                                    {
+                                                        @* Calculate rental price based on days *@
+                                                        @if (item.RentStartDate.HasValue && item.RentEndDate.HasValue)
+                                                        {
+                                                            var days = Math.Max(1, (item.RentEndDate.Value - item.RentStartDate.Value).Days);
+                                                            @((item.Car?.Price * days * item.Count)?.ToString("C"))
+                                                        }
+                                                        else
+                                                        {
+                                                            @(item.Car?.Price.ToString("C")) <span class="text-muted">/day</span>
+                                                        }
+                                                    }
+                                                </div>
+
+                                                <div class="mt-2">
+                                                    <button class="update-btn" onclick="updateCartItem(@item.Id)">
+                                                        <i class="ri-refresh-line me-1"></i>Update
+                                                    </button>
+                                                    <button class="remove-btn" onclick="removeFromCart(@item.Id)">
+                                                        <i class="ri-delete-bin-line me-1"></i>Remove
+                                                    </button>
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
-
-                                    <div class="price-display">
-                                        @if (item.ItemType == CartItemType.Rent)
-                                        {
-                                            <div class="text-muted small">$@item.DailyRentPrice/day</div>
-                                        }
-                                        <strong class="item-total">$@item.TotalPrice.ToString("F2")</strong>
-                                    </div>
-
-                                    <button class="btn btn-danger btn-sm mt-2" onclick="removeFromCart(@item.Id)">
-                                        <i class="fas fa-trash"></i> Remove
-                                    </button>
-                                </div>
+                                }
                             </div>
                         </div>
                     </div>
-                }
-            </div>
 
-            <div class="col-lg-4">
-                <div class="card sticky-top">
-                    <div class="card-header">
-                        <h5 class="mb-0">Order Summary</h5>
-                    </div>
-                    <div class="card-body">
-                        <div class="d-flex justify-content-between mb-2">
-                            <span>Items (@Model.Sum(c => c.Count)):</span>
-                            <span id="subtotal">$@Model.Sum(c => c.TotalPrice).ToString("F2")</span>
-                        </div>
-                        <div class="d-flex justify-content-between mb-2">
-                            <span>Tax:</span>
-                            <span id="tax">$@((Model.Sum(c => c.TotalPrice) * 0.08m).ToString("F2"))</span>
-                        </div>
-                        <hr>
-                        <div class="d-flex justify-content-between mb-3">
-                            <strong>Total:</strong>
-                            <strong id="total">$@((Model.Sum(c => c.TotalPrice) * 1.08m).ToString("F2"))</strong>
-                        </div>
+                    <div class="col-lg-4">
+                        <div class="cart-summary">
+                            <h5 class="mb-3">
+                                <i class="ri-file-list-3-line me-2"></i>
+                                Order Summary
+                            </h5>
 
-                        <button class="btn btn-primary btn-block btn-lg" onclick="proceedToCheckout()">
-                            <i class="fas fa-credit-card"></i> Proceed to Checkout
-                        </button>
+                            <div class="summary-row">
+                                <span>Items (@ViewBag.ItemCount)</span>
+                                <span id="items-subtotal">@ViewBag.CartTotal?.ToString("C")</span>
+                            </div>
 
-                        <button class="btn btn-outline-secondary btn-block mt-2" onclick="clearCart()">
-                            <i class="fas fa-trash-alt"></i> Clear Cart
-                        </button>
+                            <div class="summary-row">
+                                <span>Processing Fee</span>
+                                <span>@ViewBag.ProcessingFee?.ToString("C")</span>
+                            </div>
+
+                            <div class="summary-row">
+                                <span>Tax (@((ViewBag.TaxRate ?? 0.085m) * 100)%)</span>
+                                <span id="tax-amount">@ViewBag.TaxAmount?.ToString("C")</span>
+                            </div>
+
+                            <div class="summary-row">
+                                <span><strong>Total</strong></span>
+                                <span id="total-amount"><strong>@ViewBag.FinalTotal?.ToString("C")</strong></span>
+                            </div>
+
+                            <button class="checkout-btn" onclick="proceedToCheckout()">
+                                <i class="ri-secure-payment-line me-2"></i>
+                                Proceed to Checkout
+                            </button>
+
+                            <button class="clear-cart-btn" onclick="clearCart()">
+                                <i class="ri-delete-bin-line me-2"></i>
+                                Clear Cart
+                            </button>
+                        </div>
                     </div>
                 </div>
-            </div>
+            }
+            else
+            {
+                <!-- Empty Cart State -->
+                <div class="cart-card" id="empty-cart">
+                    <div class="empty-cart">
+                        <div class="empty-cart-icon">
+                            <i class="ri-shopping-cart-line"></i>
+                        </div>
+                        <h4>Your cart is empty</h4>
+                        <p>Looks like you haven't added any vehicles to your cart yet.</p>
+                        <a href="@Url.Action("Index", "Car")" class="shop-now-btn">
+                            <i class="ri-car-line"></i>
+                            Browse Vehicles
+                        </a>
+                    </div>
+                </div>
+            }
         </div>
+    </div>
+
+    <!-- CSRF Token for AJAX requests -->
+    @Html.AntiForgeryToken()
+
+    @section Scripts
+    {
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+        <script src="~/js/Cart/list.js"></script>
     }
-</div>
+    </body>

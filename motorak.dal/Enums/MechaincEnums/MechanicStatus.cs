@@ -8,6 +8,6 @@ namespace Motorak.DAL.Enums.MechaincEnums
 {
     public enum MechanicStatus
     {
-        Busy,Free
+        Busy,Free, Available, OnBreak, OffDuty
     }
 }

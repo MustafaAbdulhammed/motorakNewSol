@@ -175,3 +175,36 @@
         margin-bottom: 1rem;
     }
 }
+.header {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    background-color: rgba(26, 0, 31, 0.95);
+    backdrop-filter: blur(10px);
+    z-index: 1000;
+    border-bottom: 1px solid rgba(90, 0, 163, 0.3);
+}
+
+.nav {
+    height: 70px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 2rem;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.nav__list {
+    display: flex;
+    list-style: none;
+    gap: 2rem; /* This fixes the spacing between nav items */
+    margin: 0;
+    padding: 0;
+}
+
+.main {
+    margin-top: 70px; /* This fixes the content spacing below header */
+    min-height: calc(100vh - 70px);
+}

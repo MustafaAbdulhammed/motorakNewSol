@@ -14,23 +14,36 @@ namespace motorak.dal.Entites
 
         public string UserId { get; set; }
         public virtual User User { get; set; }
-
-        public DateTime CreatedAt { get; set; } = DateTime.Now;
-        public bool IsDeleted { get; set; } = false;
-        public DateTime? DeletedAt { get; set; }
-        public DateTime UpdatedAt { get; set; } = DateTime.Now;
-        public bool IsUpdated { get; set; } = false;
+        public DateTime CreatedAt { get;  set; }
+        public bool IsDeleted { get; private set; }
+        public DateTime? DeletedAt { get; private set; }
+        public DateTime UpdatedAt { get; private set; }
+        public bool IsUpdated { get; private set; }
 
         public void Delete()
         {
             IsDeleted = true;
             DeletedAt = DateTime.Now;
         }
-
-        public void Update()
+        public void UpdateCustomerInfo(string name, string phonenumber)
         {
-            IsUpdated = true;
+            if (User != null)
+            {
+                User.Name = name;
+                User.PhoneNumber = phonenumber;
+            }
             UpdatedAt = DateTime.Now;
+            IsUpdated = true;
         }
+
+        public Customer()
+        {
+            Purchases = new List<Purchase>();
+            CreatedAt = DateTime.Now;
+            IsDeleted = false;
+            IsUpdated = false;
+
+        }
+
     }
 }

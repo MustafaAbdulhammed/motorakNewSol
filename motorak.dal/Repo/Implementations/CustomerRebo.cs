@@ -1,10 +1,10 @@
 ﻿
 using Microsoft.EntityFrameworkCore;
-using Motorak.DAl.Repo.Abstractions;
-
-using Motorak.DAL.Entites;
-using motorak.DAL.DataBase;
 using motorak.dal.Entites;
+using motorak.dal.Migrations;
+using motorak.DAL.DataBase;
+using Motorak.DAl.Repo.Abstractions;
+using Motorak.DAL.Entites;
 
 namespace Motorak.DAl.Repo.Implementations
 {
@@ -29,8 +29,11 @@ namespace Motorak.DAl.Repo.Implementations
 
         public async Task<Customer?> GetByIdAsync(int id)
         {
-            return await MDB.Customers.Include(u => u.User).Where(u => u.Id == id).FirstOrDefaultAsync();
+            return await MDB.Customers
+                .Include(c => c.User)   // load related User so it can be updated
+                .FirstOrDefaultAsync(c => c.Id == id);
         }
+
 
         public async Task<Customer?> GetByUserIdAsync(string id)
         {

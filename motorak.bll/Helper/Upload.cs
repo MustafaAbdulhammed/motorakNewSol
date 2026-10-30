@@ -11,26 +11,20 @@ namespace Motorak.BLL.Helper
 
             try
             {
-                //catch the folder Path and the file name in server
-                // 1 ) Get Directory
-                string FolderPath = Directory.GetCurrentDirectory() + "/wwwroot/" + FolderName;
+                string FolderPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", FolderName);
 
+                if (!Directory.Exists(FolderPath))
+                    Directory.CreateDirectory(FolderPath);
 
-                //2) Get File Name
-                string FileName = Guid.NewGuid() + Path.GetFileName(File.FileName);
-                //Guid => Word contain from 36 character
-
-                // 3) Merge Path with File Name
+                string FileName = Guid.NewGuid() + Path.GetExtension(File.FileName);
                 string FinalPath = Path.Combine(FolderPath, FileName);
-                //combine put /
 
-                //4) Save File As Streams "Data Overtime"
                 using (var Stream = new FileStream(FinalPath, FileMode.Create))
                 {
                     File.CopyTo(Stream);
                 }
 
-                return FileName;
+                return $"{FolderName}/{FileName}";
             }
             catch (Exception ex)
             {

@@ -2,6 +2,7 @@
 using Microsoft.EntityFrameworkCore.ChangeTracking.Internal;
 using motorak.dal.Entites;
 using Motorak.BLL.ModelVM.Customer;
+using Motorak.BLL.ModelVM.Service;
 using Motorak.BLL.Services.Abstractions;
 using Motorak.DAl.Repo.Abstractions;
 using Motorak.DAl.Repo.Implementations;
@@ -9,16 +10,24 @@ using Motorak.DAL.Entites;
 
 namespace Motorak.BLL.Services.Implementations
 {
+    using Microsoft.AspNetCore.Identity;
+    using Motorak.Utility;
+
     public class CustomerService : ICustomerService
     {
         private readonly ICustomerRebo _customerRepo;
         private readonly IMapper _mapper;
+        private readonly IPasswordHasher<User> _passwordHasher;
+        private readonly UserManager<User> _userManager;
 
-        public CustomerService(ICustomerRebo customerRepo, IMapper mapper)
+        public CustomerService(ICustomerRebo customerRepo, IMapper mapper, IPasswordHasher<User> passwordHasher,UserManager<User> userManager)
         {
             _customerRepo = customerRepo;
             _mapper = mapper;
+            _passwordHasher = passwordHasher;
+            _userManager = userManager;
         }
+   
 
         public async Task<(bool status, string message, List<CustomerListModel>)> GetAllCustomersAsync()
         {
@@ -38,15 +47,17 @@ namespace Motorak.BLL.Services.Implementations
         {
             try
             {
-                var customer = await _customerRepo.GetByIdAsync(id);
-                if (customer == null) return (false, "Customer Not Found!!", null);
+                var result = _customerRepo.GetByIdAsync(id);
+                if (result == null)
+                {
+                    return (false, "Customer not found", null);
+                }
 
-                var result = _mapper.Map<CustomerDetailsModel>(customer);
-                return (true, "Customer retrieved successfully!", result);
+                return (true, "Customer found", _mapper.Map<CustomerDetailsModel>(await result));
             }
             catch (Exception ex)
             {
-                return (false, $"Failed to retrieve customer: {ex.Message}", null);
+                return (false, $"Error: {ex.Message}", null);
             }
         }
 
@@ -74,7 +85,7 @@ namespace Motorak.BLL.Services.Implementations
                     return (false, "Customer model is null");
 
                 // Check if email already exists
-                var existingCustomer = await _customerRepo.GetByEmailAsync(customerModel.Email);
+                var existingCustomer = await _userManager.FindByEmailAsync(customerModel.Email);
                 if (existingCustomer != null)
                     return (false, "Email already exists");
 
@@ -83,14 +94,41 @@ namespace Motorak.BLL.Services.Implementations
                 if (existingPhone != null)
                     return (false, "Phone number already exists");
 
-                var customer = _mapper.Map<Customer>(customerModel);
-                var user = _mapper.Map<User>(customerModel);
+                var user = new User
+                {
+                    UserName = customerModel.Email,
+                    Email = customerModel.Email,
+                    PhoneNumber = customerModel.PhoneNumber,
+                    Name = customerModel.Name,
+                    EmailConfirmed = true,
+                    CreatedAt = DateTime.Now
+                };
 
-                customer.UserId = user.Id;
-                customer.User = user;
+                var createUserResult = await _userManager.CreateAsync(user, customerModel.Password);
+                if (!createUserResult.Succeeded)
+                {
+                    var errors = string.Join(", ", createUserResult.Errors.Select(e => e.Description));
+                    return (false, $"Failed to create user: {errors}");
+                }
+
+                var roleResult = await _userManager.AddToRoleAsync(user, Seed.Role_Customer);
+                if (!roleResult.Succeeded)
+                {
+                    await _userManager.DeleteAsync(user);
+                    var errors = string.Join(", ", roleResult.Errors.Select(e => e.Description));
+                    return (false, $"Failed to assign customer role: {errors}");
+                }
+
+                var customer = new Customer
+                {
+                    UserId = user.Id,
+                    User = user,
+                    CreatedAt = DateTime.Now,
+                };
 
                 await _customerRepo.CreateAsync(customer);
                 await _customerRepo.SaveChangesAsync();
+
                 return (true, "Customer Created Successfully!");
             }
             catch (Exception ex)
@@ -103,26 +141,29 @@ namespace Motorak.BLL.Services.Implementations
         {
             try
             {
-                var existingCustomer = await _customerRepo.GetByIdAsync(customerModel.Id);
-                if (existingCustomer == null)
-                {
-                    return (false, "Customer Not Found!!");
-                }
+                var result = await _customerRepo.GetByIdAsync(customerModel.Id);
+                if (result == null)
+                    return (false, "Customer not found");
 
-                _mapper.Map(customerModel, existingCustomer);
-                _mapper.Map(customerModel, existingCustomer.User);
+                _mapper.Map(customerModel, result);
 
-                existingCustomer.Update();
+                if (result.User != null)
+                    _mapper.Map(customerModel, result.User);
 
-                _customerRepo.Update(existingCustomer);
+                result.UpdateCustomerInfo(customerModel.Name, customerModel.PhoneNumber);
+
+                _customerRepo.Update(result);
                 await _customerRepo.SaveChangesAsync();
-                return (true, "Customer Updated Successfully!");
+
+                return (true, "Customer updated successfully");
             }
             catch (Exception ex)
             {
-                return (false, ex.Message);
+                return (false, $"Error Occurred: {ex.Message}");
             }
         }
+
+
 
         public async Task<(bool status, string message)> DeleteCustomerAsync(int id)
         {

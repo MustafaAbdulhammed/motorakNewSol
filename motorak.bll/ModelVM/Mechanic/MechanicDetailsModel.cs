@@ -18,6 +18,5 @@ namespace Motorak.BLL.ModelVM.Mechanic
         public bool IsUpdated { get; set; }
         public DateTime UpdatedAt { get; set; }
 
-        //public List<ServiceReview> review {get;set;}
     }
 }

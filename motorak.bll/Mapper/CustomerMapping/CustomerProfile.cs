@@ -15,6 +15,7 @@ namespace Motorak.BLL.Mapper.CustomerMapping
                 .ForMember(c => c.Id, opt => opt.MapFrom(x => x.Id.ToString()))
                 .ForMember(c => c.Name, opt => opt.MapFrom(x => x.User.Name))
                 .ForMember(c => c.Email, opt => opt.MapFrom(x => x.User.Email))
+                .ForMember(c => c.Phone, opt => opt.MapFrom(x => x.User.PhoneNumber))
                 .ForMember(c => c.PurchasedCarsCount, opt => opt.MapFrom(x => x.Purchases != null ? x.Purchases.Count : 0))
                 .ForMember(c => c.CreatedAt, opt => opt.MapFrom(x => x.CreatedAt))
                 .ForMember(c => c.IsDeleted, opt => opt.MapFrom(x => x.IsDeleted))
@@ -56,53 +57,19 @@ namespace Motorak.BLL.Mapper.CustomerMapping
                 .ForMember(dest => dest.PhoneNumber, opt => opt.MapFrom(src => src.PhoneNumber))
                 .ForMember(dest => dest.Name, opt => opt.MapFrom(src => src.Name))
                 .ForMember(dest => dest.CreatedAt, opt => opt.MapFrom(src => src.CreatedAt))
-                .ForMember(dest => dest.NormalizedEmail, opt => opt.MapFrom(src => src.Email.ToUpper()))
-                .ForMember(dest => dest.NormalizedUserName, opt => opt.MapFrom(src => src.Email.ToUpper()))
+                .ForMember(dest => dest.NormalizedEmail, opt => opt.MapFrom(src => src.Email.Normalize().ToUpper()))
+                .ForMember(dest => dest.NormalizedUserName, opt => opt.MapFrom(src => src.Email.Normalize().ToUpper()))
                 .ForMember(dest => dest.ImagePath, opt => opt.Ignore())
-                .ForMember(dest => dest.PasswordHash, opt => opt.Ignore()) // Password will be handled by Identity
-                .ForMember(dest => dest.SecurityStamp, opt => opt.Ignore())
-                .ForMember(dest => dest.ConcurrencyStamp, opt => opt.Ignore())
-                .ForMember(dest => dest.PhoneNumberConfirmed, opt => opt.Ignore())
-                .ForMember(dest => dest.TwoFactorEnabled, opt => opt.Ignore())
-                .ForMember(dest => dest.LockoutEnd, opt => opt.Ignore())
-                .ForMember(dest => dest.LockoutEnabled, opt => opt.Ignore())
-                .ForMember(dest => dest.AccessFailedCount, opt => opt.Ignore())
-                .ForMember(dest => dest.EmailConfirmed, opt => opt.Ignore());
+                .ForMember(dest => dest.PasswordHash, opt => opt.Ignore());
 
             CreateMap<EditCustomerModel, Customer>()
-                .ForMember(dest => dest.Id, opt => opt.Ignore())
-                .ForMember(dest => dest.UserId, opt => opt.Ignore())
-                .ForMember(dest => dest.User, opt => opt.Ignore())
-                .ForMember(dest => dest.CreatedAt, opt => opt.Ignore())
-                .ForMember(dest => dest.IsDeleted, opt => opt.Ignore())
-                .ForMember(dest => dest.DeletedAt, opt => opt.Ignore())
-                .ForMember(dest => dest.UpdatedAt, opt => opt.MapFrom(src => src.UpdatedAt))
-                .ForMember(dest => dest.IsUpdated, opt => opt.MapFrom(src => src.IsUpdated))
-                .ForMember(dest => dest.Purchases, opt => opt.Ignore())
-                .ForMember(dest => dest.Rents, opt => opt.Ignore())
-                .ForMember(dest => dest.Services, opt => opt.Ignore())
-                .ForMember(dest => dest.ServiceReviews, opt => opt.Ignore())
-                .ForMember(dest => dest.Cars, opt => opt.Ignore());
+                .ForMember(dest => dest.Id, opt => opt.Ignore()); 
 
             CreateMap<EditCustomerModel, User>()
-                .ForMember(dest => dest.Id, opt => opt.Ignore())
-                .ForMember(dest => dest.PhoneNumber, opt => opt.MapFrom(src => src.PhoneNumber))
                 .ForMember(dest => dest.Name, opt => opt.MapFrom(src => src.Name))
-                .ForMember(dest => dest.ImagePath, opt => opt.MapFrom(src => src.ImagePath))
-                .ForMember(dest => dest.UserName, opt => opt.Ignore())
-                .ForMember(dest => dest.Email, opt => opt.Ignore())
-                .ForMember(dest => dest.NormalizedEmail, opt => opt.Ignore())
-                .ForMember(dest => dest.NormalizedUserName, opt => opt.Ignore())
-                .ForMember(dest => dest.CreatedAt, opt => opt.Ignore())
-                .ForMember(dest => dest.PasswordHash, opt => opt.Ignore())
-                .ForMember(dest => dest.SecurityStamp, opt => opt.Ignore())
-                .ForMember(dest => dest.ConcurrencyStamp, opt => opt.Ignore())
-                .ForMember(dest => dest.PhoneNumberConfirmed, opt => opt.Ignore())
-                .ForMember(dest => dest.TwoFactorEnabled, opt => opt.Ignore())
-                .ForMember(dest => dest.LockoutEnd, opt => opt.Ignore())
-                .ForMember(dest => dest.LockoutEnabled, opt => opt.Ignore())
-                .ForMember(dest => dest.AccessFailedCount, opt => opt.Ignore())
-                .ForMember(dest => dest.EmailConfirmed, opt => opt.Ignore());
+                .ForMember(dest => dest.PhoneNumber, opt => opt.MapFrom(src => src.PhoneNumber))
+                .ForMember(dest => dest.Id, opt => opt.Ignore()); 
+
         }
     }
 }

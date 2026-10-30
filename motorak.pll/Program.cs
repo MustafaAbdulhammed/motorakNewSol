@@ -24,6 +24,7 @@ using Motorak.BLL.Services.Abstractions;
 using Motorak.BLL.Services.Implementations;
 using Motorak.DAl.Repo.Abstractions;
 using Motorak.DAl.Repo.Implementations;
+using Motorak.DAL.Entites;
 using Motorak.DAL.Repo.Abstractions;
 using Motorak.DAL.Repo.Implementations;
 using Motorak.Utility;
@@ -151,6 +152,7 @@ namespace motorak.pll
             });
 
 
+
             var app = builder.Build();
 
             using (var scope = app.Services.CreateScope())
@@ -166,7 +168,10 @@ namespace motorak.pll
 
                     await SeedRoles(roleManager);
 
-                    await DbSeeder.SeedAsync(context);
+                    await AdminLogins.SeedAdminAsync(userManager, roleManager);
+                    
+
+                    //await DbSeeder.SeedAsync(context);
                 }
                 catch (Exception ex)
                 {

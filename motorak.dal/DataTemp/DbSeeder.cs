@@ -1,8 +1,8 @@
-﻿using Microsoft.EntityFrameworkCore;
-using motorak.dal.Entites;
-using motorak.dal.Enums.CarEnums;
-using motorak.DAL.DataBase;
-using Motorak.DAL.Enums.CarEnums;
+﻿//using Microsoft.EntityFrameworkCore;
+//using motorak.dal.Entites;
+//using motorak.dal.Enums.CarEnums;
+//using motorak.DAL.DataBase;
+//using Motorak.DAL.Enums.CarEnums;
 
 namespace motorak.dal.DataTemp
 {

@@ -9,16 +9,16 @@ namespace Motorak.BLL.ModelVM.Car
     public class CreateCarModel
     {
         [Required, MaxLength(50)]
-        public string Brand { get; set; } = null!;
+        public string Brand { get; set; } = string.Empty;
 
         [Required, MaxLength(50)]
-        public string Model { get; set; } = null!;
+        public string Model { get; set; } = string.Empty;
 
         [Required]
         public int Year { get; set; }
 
         [Required, MaxLength(30)]
-        public string Color { get; set; } = null!;
+        public string Color { get; set; } = string.Empty;
 
         [Required]
         public int Mileage { get; set; }
@@ -41,5 +41,6 @@ namespace Motorak.BLL.ModelVM.Car
         public CarCategory Category { get; set; }
 
         public string? ImagePath { get; set; }
+        public IFormFile? ImageFile { get; set; }
     }
 }

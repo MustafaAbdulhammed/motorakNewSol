@@ -1,65 +1,213 @@
 ﻿@using Motorak.BLL.ModelVM.Mechanic
-@model MechanicDetailsModel
+@using Motorak.DAL.Enums.MechaincEnums
+@model EditMechanicModel
+@{
+    ViewData["Title"] = "Edit Mechanic";
+    Layout = "_MotorakIndex";
+}
 
-<style>
-    /* Custom card style for this view only */
-    .card-purple {
-        background-color: #2a0044; /* deep purple for card body */
-        color: white;
-        border: 1px solid #5a00a3; /* purple border */
-        border-radius: 15px;
-        box-shadow: 0 4px 10px rgba(90, 0, 163, 0.5);
-        transition: transform 0.2s ease, box-shadow 0.2s ease;
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/remixicon/3.4.0/remixicon.css" rel="stylesheet">
+    <link rel="stylesheet" href="~/css/Manage.css">
+</head>
+
+<body>
+    <section class="customers-section">
+        <div class="container">
+            <!-- Header -->
+            <div class="section-header">
+                <div class="header-content">
+                    <h1 class="section-title">
+                        <i class="ri-edit-line"></i>
+                        Edit Mechanic
+                    </h1>
+                    <p class="section-subtitle">Update mechanic information</p>
+                </div>
+                <div class="header-actions">
+                    <a asp-action="Index" class="btn-secondary">
+                        <i class="ri-arrow-left-line"></i>
+                        Back to List
+                    </a>
+                    <a asp-action="MechanicDetails" asp-route-id="@Model.Id" class="btn-secondary">
+                        <i class="ri-eye-line"></i>
+                        View Details
+                    </a>
+                </div>
+            </div>
+
+            <!-- Edit Mechanic Form -->
+            <div class="form-section">
+                <div class="card-header">
+                    <div class="customer-avatar">
+                        <i class="ri-edit-line"></i>
+                    </div>
+                    <div class="customer-info">
+                        <h3 class="customer-name">Editing Mechanic #@Model.Id</h3>
+                        <p class="customer-email">Update the information below</p>
+                    </div>
+                </div>
+
+                <div class="card-content">
+                    <form asp-controller="Mechanic" asp-action="Edit" method="post" id="editMechanicForm">
+                        @Html.AntiForgeryToken()
+                        <input asp-for="Id" type="hidden" />
+                        <input asp-for="IsUpdated" type="hidden" />
+                        <input asp-for="UpdatedAt" type="hidden" />
+
+                        <!-- Display ModelState errors -->
+                        @if (!ViewData.ModelState.IsValid)
+                        {
+                            <div class="validation-summary" style="background: rgba(244, 67, 54, 0.1); border: 1px solid var(--error-color); border-radius: var(--border-radius); padding: 1rem; margin-bottom: 1.5rem;">
+                                <h4 style="color: var(--error-color); margin-bottom: 0.5rem;">
+                                    <i class="ri-error-warning-line"></i> Please correct the following errors:
+                                </h4>
+                                <ul style="margin: 0; padding-left: 1rem;">
+                                    @foreach (var error in ViewData.ModelState.Values.SelectMany(v => v.Errors))
+                                    {
+                                        <li style="color: var(--error-color); margin-bottom: 0.25rem;">@error.ErrorMessage</li>
+                                    }
+                                </ul>
+                            </div>
+                        }
+
+                        <div class="info-grid">
+                            <!-- Mechanic ID (Read-only) -->
+                            <div class="info-item">
+                                <i class="ri-hashtag"></i>
+                                <div style="flex: 1;">
+                                    <input value="Mechanic ID: @Model.Id" class="form-control readonly-field" readonly />
+                                </div>
+                            </div>
+
+                            <!-- Name Field -->
+                            <div class="info-item @(Html.ViewData.ModelState["Name"]?.Errors.Count > 0 ? "error" : "")">
+                                <i class="ri-user-line"></i>
+                                <div style="flex: 1;">
+                                    <input asp-for="Name" placeholder="Enter Full Name *" class="form-control" />
+                                    @if (Html.ViewData.ModelState["Name"]?.Errors.Count > 0)
+                                    {
+                                        <div class="validation-error">
+                                            <i class="ri-error-warning-line"></i>
+                                            <span asp-validation-for="Name"></span>
+                                        </div>
+                                    }
+                                </div>
+                            </div>
+
+                            <!-- Phone Number Field -->
+                            <div class="info-item @(Html.ViewData.ModelState["PhoneNumber"]?.Errors.Count > 0 ? "error" : "")">
+                                <i class="ri-phone-line"></i>
+                                <div style="flex: 1;">
+                                    <input asp-for="PhoneNumber" placeholder="Enter Phone Number" class="form-control" />
+                                    @if (Html.ViewData.ModelState["PhoneNumber"]?.Errors.Count > 0)
+                                    {
+                                        <div class="validation-error">
+                                            <i class="ri-error-warning-line"></i>
+                                            <span asp-validation-for="PhoneNumber"></span>
+                                        </div>
+                                    }
+                                </div>
+                            </div>
+
+                            <!-- Work Hours Field -->
+                            <div class="info-item @(Html.ViewData.ModelState["WorkHours"]?.Errors.Count > 0 ? "error" : "")">
+                                <i class="ri-time-line"></i>
+                                <div style="flex: 1;">
+                                    <select asp-for="WorkHours" class="form-control" style="padding: 0.75rem; border: none; background: transparent; cursor: pointer;">
+                                        <option value="1" selected="@(Model.WorkHours == "1")">7AM - 4PM (Day Shift)</option>
+                                        <option value="2" selected="@(Model.WorkHours == "2")">4PM - 1AM (Night Shift)</option>
+                                    </select>
+                                    @if (Html.ViewData.ModelState["WorkHours"]?.Errors.Count > 0)
+                                    {
+                                        <div class="validation-error">
+                                            <i class="ri-error-warning-line"></i>
+                                            <span asp-validation-for="WorkHours"></span>
+                                        </div>
+                                    }
+                                </div>
+                            </div>
+
+                            <!-- Status Field -->
+                            <div class="info-item @(Html.ViewData.ModelState["Status"]?.Errors.Count > 0 ? "error" : "")">
+                                <i class="ri-shield-check-line"></i>
+                                <div style="flex: 1;">
+                                    <select asp-for="Status" class="form-control" style="padding: 0.75rem; border: none; background: transparent; cursor: pointer;">
+                                        <option value="Available" selected="@(Model.Status == MechanicStatus.Available)">Available</option>
+                                        <option value="Busy" selected="@(Model.Status == MechanicStatus.Busy)">Busy</option>
+                                        <option value="On Break" selected="@(Model.Status == MechanicStatus.OnBreak)">On Break</option>
+                                        <option value="Off Duty" selected="@(Model.Status == MechanicStatus.OffDuty)">Off Duty</option>
+                                    </select>
+                                    @if (Html.ViewData.ModelState["Status"]?.Errors.Count > 0)
+                                    {
+                                        <div class="validation-error">
+                                            <i class="ri-error-warning-line"></i>
+                                            <span asp-validation-for="Status"></span>
+                                        </div>
+                                    }
+                                </div>
+                            </div>
+
+                            <!-- Image Path Field (Optional) -->
+                            <div class="info-item @(Html.ViewData.ModelState["ImagePath"]?.Errors.Count > 0 ? "error" : "")">
+                                <i class="ri-image-line"></i>
+                                <div style="flex: 1;">
+                                    <input asp-for="ImagePath" placeholder="Profile Image Path (Optional)" class="form-control" />
+                                    @if (Html.ViewData.ModelState["ImagePath"]?.Errors.Count > 0)
+                                    {
+                                        <div class="validation-error">
+                                            <i class="ri-error-warning-line"></i>
+                                            <span asp-validation-for="ImagePath"></span>
+                                        </div>
+                                    }
+                                </div>
+                            </div>
+
+                            <!-- Last Update Info -->
+                            <div class="info-item">
+                                <i class="ri-time-line"></i>
+                                <div style="flex: 1;">
+                                    <input value="Last Update: @DateTime.Now.ToString("MMM dd, yyyy 'at' hh:mm tt")" class="form-control readonly-field" readonly />
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Additional Information Section -->
+                        <div style="background: var(--bg-secondary); padding: 1rem; border-radius: var(--border-radius); margin: 1.5rem 0;">
+                            <h4 style="color: var(--text-primary); margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.5rem;">
+                                <i class="ri-information-line"></i>
+                                Important Notes:
+                            </h4>
+                            <ul style="color: var(--text-secondary); margin: 0; padding-left: 1rem;">
+                                <li>Email address cannot be changed after account creation</li>
+                                <li>Phone number is optional but recommended for contact purposes</li>
+                                <li>Work hours determine the mechanic's availability schedule</li>
+                                <li>Status indicates current work availability</li>
+                                <li>Changes will be saved immediately upon submission</li>
+                            </ul>
+                        </div>
+
+                        <div class="card-actions">
+                            <button type="submit" class="action-btn view-btn" id="submitBtn">
+                                <i class="ri-save-line"></i> Save Changes
+                            </button>
+                            <a asp-action="MechanicDetails" asp-route-id="@Model.Id" class="action-btn edit-btn">
+                                <i class="ri-eye-line"></i> View Details
+                            </a>
+                            <a asp-action="Index" class="action-btn delete-btn">
+                                <i class="ri-close-line"></i> Cancel
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    @section Scripts {
+        <script src="~/js/MechManage/common.js"></script>
+        <script src="~/js/MechManage/edit.js"></script>
     }
 
-        .card-purple:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 8px 20px rgba(90, 0, 163, 0.7);
-        }
-
-        .card-purple .card-header {
-            background-color: #4b007d;
-            border-bottom: 1px solid #5a00a3;
-            font-weight: bold;
-        }
-
-        .card-purple .card-body {
-            background-color: #35005c;
-        }
-</style>
-
-
-<div class="card text-center">
-    <div>
-        <b>Edit Mechanic</b>
-    </div>
-    <div class="card-body">
-
-        <form asp-controller="Customer" asp-action="Edit">
-            <input type="hidden" asp-for="Id" />
-            <div class="form-group">
-                <div style="text-align: left;" for="exampleInputName">Name</div>
-                <input asp-for="Name" type="text" class="form-control" id="exampleInputName" aria-describedby="nameHelp" placeholder="Enter Name" />
-                <br />
-            </div>
-            <div class="form-group">
-                <div style="text-align: left;" for="exampleInputEmail1">Email</div>
-                <input asp-for="Email" type="email" class="form-control" id="exampleInputEmail1" aria-describedby="emailHelp" placeholder="Enter Email" />
-                <br />
-            </div>
-            <select input asp-for="WorkHours" type="text" class="form-select" aria-label="Default select example">
-                <option selected>Work Horus</option>
-                <option value="1">7AM - 4PM</option>
-                <option value="2">4PM - 1AM</option>
-                <br>
-            </select>
-            <select input asp-for="Status" type="text" class="form-select" aria-label="Default select example">
-                <option selected>Status</option>
-                <option value="1">Free</option>
-                <option value="2">Busy</option>
-                <br>
-            </select>
-            <button type="submit" class="btn btn-primary">Submit</button>
-        </form>
-    </div>
-</div>
+</body>

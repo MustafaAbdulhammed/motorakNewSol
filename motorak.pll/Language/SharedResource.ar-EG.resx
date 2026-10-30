@@ -123,11 +123,20 @@
   <data name="Cart" xml:space="preserve">
     <value>السلة</value>
   </data>
+  <data name="Customers" xml:space="preserve">
+    <value>الزبائين</value>
+  </data>
+  <data name="Hangfire" xml:space="preserve">
+    <value>لوحة التحكم</value>
+  </data>
   <data name="Home" xml:space="preserve">
     <value>الرئيسية</value>
   </data>
   <data name="Logout" xml:space="preserve">
     <value>تسجيل خروج</value>
+  </data>
+  <data name="Mechaincs" xml:space="preserve">
+    <value>الميكانيكوين</value>
   </data>
   <data name="Mechanics" xml:space="preserve">
     <value>الميكانيكيون</value>

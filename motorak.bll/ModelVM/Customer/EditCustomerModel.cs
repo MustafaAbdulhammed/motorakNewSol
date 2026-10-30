@@ -15,8 +15,8 @@ namespace Motorak.BLL.ModelVM.Customer
         public string PhoneNumber { get; set; }
 
         public string? ImagePath { get; set; }
-        public DateTime UpdatedAt { get; set; } = DateTime.Now;
-        public bool IsUpdated { get; set; } = true;
+        public DateTime UpdatedAt { get; set; } 
+        public bool IsUpdated { get; set; } 
 
     }
 }

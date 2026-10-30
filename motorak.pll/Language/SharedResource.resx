@@ -123,11 +123,20 @@
   <data name="Cart" xml:space="preserve">
     <value>Cart </value>
   </data>
+  <data name="Customers" xml:space="preserve">
+    <value>Customers</value>
+  </data>
+  <data name="Hangfire" xml:space="preserve">
+    <value>Hangfire</value>
+  </data>
   <data name="Home" xml:space="preserve">
     <value>Home </value>
   </data>
   <data name="Logout" xml:space="preserve">
     <value>Logout</value>
+  </data>
+  <data name="Mechaincs" xml:space="preserve">
+    <value>Mechaincs</value>
   </data>
   <data name="Mechanics" xml:space="preserve">
     <value>Mechanics </value>

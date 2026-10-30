@@ -1,20 +1,12 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Rendering;
-using Microsoft.EntityFrameworkCore;
 using Motorak.BLL.ModelVM.Customer;
 using Motorak.BLL.Services.Abstractions;
-using Motorak.BLL.Services.Implementations;
-using motorak.DAL.DataBase;
-using Motorak.DAL.Entites;
-using Motorak.DAL.Enums.SeviceEnums;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+using Motorak.Utility;
 
 namespace Motorak.PLL.Controllers
 {
+    [Authorize(Roles = Seed.Role_Admin)]
     public class CustomerController : Controller
     {
         private readonly ICustomerService _customerService;
@@ -23,113 +15,183 @@ namespace Motorak.PLL.Controllers
             _customerService = customerService;
         }
 
-        
-        //[Authorize(Roles = "Admin")]
         [HttpGet]
         public async Task<IActionResult> Index()
         {
-            var (status, message, customers) = await _customerService.GetAllCustomersAsync();
-            if (!status || customers == null)
+            try
             {
-                ViewBag.Error = message;
-                return View("No Customers Found");
+                var (status, message, customers) = await _customerService.GetAllCustomersAsync();
+                if (!status || customers == null)
+                {
+                    ViewBag.Error = message ?? "No customers found";
+                    return View(new List<CustomerListModel>());
+                }
+                return View(customers);
             }
-            return View(customers);
+            catch (Exception ex)
+            {
+                ViewBag.Error = "An error occurred while loading customers: " + ex.Message;
+                return View(new List<CustomerListModel>());
+            }
         }
 
-        
+        [HttpGet]
         public async Task<IActionResult> CustomerDetails(int id)
         {
-            var (status, message, customer) = await _customerService.GetCustomerByIdAsync(id);
-            if (!status || customer == null)
+            try
             {
-                ViewBag.Error = message;
-                return View("Customer Not Found");
+                var (status, message, customer) = await _customerService.GetCustomerByIdAsync(id);
+                if (!status || customer == null)
+                {
+                    TempData["Error"] = message ?? "Customer not found";
+                    return RedirectToAction(nameof(Index));
+                }
+                return View(customer);
             }
-            return View(customer);
+            catch (Exception ex)
+            {
+                TempData["Error"] = "An error occurred while loading customer details: " + ex.Message;
+                return RedirectToAction(nameof(Index));
+            }
         }
 
-        
         [HttpGet]
         public IActionResult Create()
         {
-            return View();
+            return View(new CreateCustomerModel());
         }
-
 
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(CreateCustomerModel model)
         {
-            if (!ModelState.IsValid) return View(model);
-
-            var (status, message) = await _customerService.CreateCustomerAsync(model);
-            if (!status)
+            try
             {
-                ModelState.AddModelError("", message);
+                if (!ModelState.IsValid)
+                {
+                    return View(model);
+                }
+
+                var (status, message) = await _customerService.CreateCustomerAsync(model);
+                if (!status)
+                {
+                    ModelState.AddModelError("", message ?? "Failed to create customer");
+                    return View(model);
+                }
+
+                TempData["Success"] = "Customer created successfully!";
+                return RedirectToAction(nameof(Index));
+            }
+            catch (Exception ex)
+            {
+                ModelState.AddModelError("", "An error occurred while creating the customer: " + ex.Message);
                 return View(model);
             }
-
-            return RedirectToAction(nameof(Index));
         }
 
         [HttpGet]
         public async Task<IActionResult> Edit(int id)
         {
-            var (status, message, customer) = await _customerService.GetCustomerByIdAsync(id);
-            if (!status || customer == null)
+            try
             {
-                ViewBag.Error = message;
-                return View(message);
-            }
+                var (status, message, existing) = await _customerService.GetCustomerByIdAsync(id);
+                if (!status || existing == null)
+                {
+                    TempData["Error"] = message ?? "Customer not found";
+                    return RedirectToAction(nameof(Index));
+                }
 
-            if (customer.IsDeleted)
-            {
-                ViewBag.Error = "This customer has been deleted.";
-                return View("Customer Deleted");
-            }
+                if (existing.IsDeleted)
+                {
+                    TempData["Error"] = "Cannot edit a deleted customer";
+                    return RedirectToAction(nameof(Index));
+                }
 
-            var model = new EditCustomerModel
+                var model = new EditCustomerModel
+                {
+                    Id = existing.Id,
+                    Name = existing.Name,
+                    PhoneNumber = existing.PhoneNumber,
+                    UpdatedAt = DateTime.Now,
+                    IsUpdated = true
+                };
+                return View(model);
+            }
+            catch (Exception ex)
             {
-                Id = customer.Id,
-                Name = customer.Name,
-                PhoneNumber = customer.PhoneNumber
-            };
-            return View(model);
+                TempData["Error"] = "An error occurred while loading customer for editing: " + ex.Message;
+                return RedirectToAction(nameof(Index));
+            }
         }
-
 
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(EditCustomerModel model)
         {
-            if (!ModelState.IsValid) return View(model);
-
-            var (status, message) = await _customerService.EditCustomerAsync(model);
-            if (!status)
+            try
             {
-                ModelState.AddModelError("", message);
+                if (!ModelState.IsValid)
+                {
+                    return View(model);
+                }
+
+                model.UpdatedAt = DateTime.Now;
+                model.IsUpdated = true;
+
+                var (status, message) = await _customerService.EditCustomerAsync(model);
+                if (!status)
+                {
+                    ModelState.AddModelError("", message ?? "Failed to update customer");
+                    return View(model);
+                }
+
+                TempData["Success"] = "Customer updated successfully!";
+                return RedirectToAction(nameof(Index));
+            }
+            catch (Exception ex)
+            {
+                ModelState.AddModelError("", "An error occurred while updating the customer: " + ex.Message);
                 return View(model);
             }
-
-            return RedirectToAction(nameof(Index));
         }
-        
+
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Delete(int id)
         {
-            var (status, message) = await _customerService.DeleteCustomerAsync(id);
-            if (!status)
+            try
             {
-                TempData["Error"] = "Could not delete Customer.";
+                var (status, message) = await _customerService.DeleteCustomerAsync(id);
+                if (!status)
+                {
+                    TempData["Error"] = message ?? "Failed to delete customer";
+                    return RedirectToAction(nameof(Index));
+                }
+
+                TempData["Success"] = "Customer deleted successfully!";
                 return RedirectToAction(nameof(Index));
             }
-
-            TempData["Success"] = "Customer Deleted Successfully";
-            return RedirectToAction(nameof(Index));
-
+            catch (Exception ex)
+            {
+                TempData["Error"] = "An error occurred while deleting the customer: " + ex.Message;
+                return RedirectToAction(nameof(Index));
+            }
         }
 
+        //[HttpPost]
+        //[ValidateAntiForgeryToken]
+        //public async Task<IActionResult> Restore(int id)
+        //{
+        //    try
+        //    {
+        //        
+        //       
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        TempData["Error"] = "An error occurred while restoring the customer: " + ex.Message;
+        //        return RedirectToAction(nameof(Index));
+        //    }
+        //}
     }
 }

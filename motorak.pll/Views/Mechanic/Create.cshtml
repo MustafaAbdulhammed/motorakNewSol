@@ -1,70 +1,173 @@
 ﻿@using Motorak.BLL.ModelVM.Mechanic
 @model CreateMechanicModel
+@{
+    ViewData["Title"] = "Create Mechanic";
+    Layout = "_MotorakIndex";
+}
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/remixicon/3.4.0/remixicon.css" rel="stylesheet">
+    <link rel="stylesheet" href="~/css/Manage.css">
+</head>
+<body>
+    <section class="customers-section">
+        <div class="container">
+            <!-- Header -->
+            <div class="section-header">
+                <div class="header-content">
+                    <h1 class="section-title">
+                        <i class="ri-tools-line"></i>
+                        Create Mechanic
+                    </h1>
+                    <p class="section-subtitle">Add a new mechanic to the system</p>
+                </div>
+                <div class="header-actions">
+                    <a asp-action="Index" class="btn-secondary">
+                        <i class="ri-arrow-left-line"></i>
+                        Back to List
+                    </a>
+                </div>
+            </div>
 
+            <!-- Create Mechanic Form -->
+            <div class="form-section">
+                <div class="card-header">
+                    <div class="customer-avatar">
+                        <i class="ri-tools-line"></i>
+                    </div>
+                    <div class="customer-info">
+                        <h3 class="customer-name">New Mechanic Registration</h3>
+                        <p class="customer-email">Please fill all required fields</p>
+                    </div>
+                </div>
 
-<style>
-    /* Custom card style for this view only */
-    .card-purple {
-        background-color: #2a0044; /* deep purple for card body */
-        color: white;
-        border: 1px solid #5a00a3; /* purple border */
-        border-radius: 15px;
-        box-shadow: 0 4px 10px rgba(90, 0, 163, 0.5);
-        transition: transform 0.2s ease, box-shadow 0.2s ease;
+                <div class="card-content">
+                    <form asp-controller="Mechanic" asp-action="Create" method="post" id="createMechanicForm">
+                        @Html.AntiForgeryToken()
+
+                        <!-- Display ModelState errors -->
+                        @if (!ViewData.ModelState.IsValid)
+                        {
+                            <div class="validation-summary" style="background: rgba(244, 67, 54, 0.1); border: 1px solid var(--error-color); border-radius: var(--border-radius); padding: 1rem; margin-bottom: 1.5rem;">
+                                <h4 style="color: var(--error-color); margin-bottom: 0.5rem;">
+                                    <i class="ri-error-warning-line"></i> Please correct the following errors:
+                                </h4>
+                                <ul style="margin: 0; padding-left: 1rem;">
+                                    @foreach (var error in ViewData.ModelState.Values.SelectMany(v => v.Errors))
+                                    {
+                                        <li style="color: var(--error-color); margin-bottom: 0.25rem;">@error.ErrorMessage</li>
+                                    }
+                                </ul>
+                            </div>
+                        }
+
+                        <div class="info-grid">
+                            <div class="info-item @(Html.ViewData.ModelState["Name"]?.Errors.Count > 0 ? "error" : "")">
+                                <i class="ri-user-line"></i>
+                                <div style="flex: 1;">
+                                    <input asp-for="Name" placeholder="Enter Full Name *" class="form-control" />
+                                    @if (Html.ViewData.ModelState["Name"]?.Errors.Count > 0)
+                                    {
+                                        <div class="validation-error">
+                                            <i class="ri-error-warning-line"></i>
+                                            <span asp-validation-for="Name"></span>
+                                        </div>
+                                    }
+                                </div>
+                            </div>
+
+                            <div class="info-item @(Html.ViewData.ModelState["Email"]?.Errors.Count > 0 ? "error" : "")">
+                                <i class="ri-mail-line"></i>
+                                <div style="flex: 1;">
+                                    <input asp-for="Email" type="email" placeholder="Enter Email Address *" class="form-control" />
+                                    @if (Html.ViewData.ModelState["Email"]?.Errors.Count > 0)
+                                    {
+                                        <div class="validation-error">
+                                            <i class="ri-error-warning-line"></i>
+                                            <span asp-validation-for="Email"></span>
+                                        </div>
+                                    }
+                                </div>
+                            </div>
+
+                            <div class="info-item @(Html.ViewData.ModelState["PhoneNumber"]?.Errors.Count > 0 ? "error" : "")">
+                                <i class="ri-phone-line"></i>
+                                <div style="flex: 1;">
+                                    <input asp-for="PhoneNumber" placeholder="Enter Phone Number" class="form-control" />
+                                    @if (Html.ViewData.ModelState["PhoneNumber"]?.Errors.Count > 0)
+                                    {
+                                        <div class="validation-error">
+                                            <i class="ri-error-warning-line"></i>
+                                            <span asp-validation-for="PhoneNumber"></span>
+                                        </div>
+                                    }
+                                </div>
+                            </div>
+
+                            <div class="info-item @(Html.ViewData.ModelState["WorkHours"]?.Errors.Count > 0 ? "error" : "")">
+                                <i class="ri-time-line"></i>
+                                <div style="flex: 1;">
+                                    <select asp-for="WorkHours" class="form-control" style="padding: 0.75rem; border: none; background: transparent; cursor: pointer;">
+                                        <option value="" disabled selected>Choose Work Hours *</option>
+                                        <option value="1">7AM - 4PM (Day Shift)</option>
+                                        <option value="2">4PM - 1AM (Night Shift)</option>
+                                    </select>
+                                    @if (Html.ViewData.ModelState["WorkHours"]?.Errors.Count > 0)
+                                    {
+                                        <div class="validation-error">
+                                            <i class="ri-error-warning-line"></i>
+                                            <span asp-validation-for="WorkHours"></span>
+                                        </div>
+                                    }
+                                </div>
+                            </div>
+
+                            <div class="info-item @(Html.ViewData.ModelState["Password"]?.Errors.Count > 0 ? "error" : "")">
+                                <i class="ri-lock-line"></i>
+                                <div style="flex: 1;">
+                                    <input asp-for="Password" type="password" placeholder="Enter Password *" class="form-control" />
+                                    @if (Html.ViewData.ModelState["Password"]?.Errors.Count > 0)
+                                    {
+                                        <div class="validation-error">
+                                            <i class="ri-error-warning-line"></i>
+                                            <span asp-validation-for="Password"></span>
+                                        </div>
+                                    }
+                                </div>
+                            </div>
+
+                            <div class="info-item @(Html.ViewData.ModelState["ConfirmPassword"]?.Errors.Count > 0 ? "error" : "")">
+                                <i class="ri-lock-password-line"></i>
+                                <div style="flex: 1;">
+                                    <input asp-for="ConfirmPassword" type="password" placeholder="Confirm Password *" class="form-control" />
+                                    @if (Html.ViewData.ModelState["ConfirmPassword"]?.Errors.Count > 0)
+                                    {
+                                        <div class="validation-error">
+                                            <i class="ri-error-warning-line"></i>
+                                            <span asp-validation-for="ConfirmPassword"></span>
+                                        </div>
+                                    }
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="card-actions">
+                            <button type="submit" class="action-btn view-btn" id="submitBtn">
+                                <i class="ri-check-line"></i> Create Mechanic
+                            </button>
+                            <a asp-action="Index" class="action-btn delete-btn">
+                                <i class="ri-close-line"></i> Cancel
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </section>
+    @section Scripts {
+        <script src="~/js/MechManage/common.js"></script>
+        <script src="~/js/MechManage/create.js"></script>
     }
 
-        .card-purple:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 8px 20px rgba(90, 0, 163, 0.7);
-        }
-
-        .card-purple .card-header {
-            background-color: #4b007d;
-            border-bottom: 1px solid #5a00a3;
-            font-weight: bold;
-        }
-
-        .card-purple .card-body {
-            background-color: #35005c;
-        }
-</style>
-
-
-<div class="card text-center">
-    <div>
-        <b>Create Mechanic</b>
-    </div>
-    <div class="card-body">
-        <form asp-controller="Mechanic" asp-action="Create">
-            <div class="form-group">
-                <div style="text-align: left;" for="exampleInputName">Name</div>
-                <input asp-for="Name" type="text" class="form-control" id="exampleInputName" aria-describedby="nameHelp" placeholder="Enter Name">
-                <br>
-            </div>
-
-            <div class="form-group">
-                <div style="text-align: left;" for="exampleInputEmail1">Email</div>
-                <input asp-for="Email" type="email" class="form-control" id="exampleInputEmail1" aria-describedby="emailHelp" placeholder="Enter Email">
-                <br>
-            </div>
-            <select input asp-for="WorkHours" type="text" class="form-select" aria-label="Default select example">
-                <option selected>Work Horus</option>
-                <option value="1">7AM - 4PM</option>
-                <option value="2">4PM - 1AM</option>
-                <br>
-            </select>
-            <div class="form-group">
-                <div style="text-align: left;" for="exampleInputAddress">Password</div>
-                <input asp-for="Password" type="password" class="form-control" id="exampleInputPassword" placeholder="Enter Password">
-                <br>
-            </div>
-            <div class="form-group">
-                <div style="text-align: left;" for="exampleInputDateOfBirth">Confirm Password</div>
-                <input asp-for="ConfirmPassword" type="password" class="form-control" id="exampleInputPassword" placeholder="ConfirmedPassword">
-                <br>
-            </div>
-            <button type="submit" class="btn btn-primary">Submit</button>
-        </form>
-    </div>
-
-</div>
+</body>

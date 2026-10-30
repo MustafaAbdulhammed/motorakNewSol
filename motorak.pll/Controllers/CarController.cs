@@ -18,7 +18,7 @@ namespace Motorak.PLL.Controllers
             _customerRebo = customerRebo;
         }
 
-        
+
         [HttpGet]
         public async Task<IActionResult> Index()
         {
@@ -43,6 +43,7 @@ namespace Motorak.PLL.Controllers
         }
 
         [HttpGet]
+        [Authorize(Roles = "Admin")]
         public IActionResult Create()
         {
             return View();
@@ -50,26 +51,50 @@ namespace Motorak.PLL.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create(CreateCarModel model)
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> Create(CreateCarModel car)
         {
-            if (!ModelState.IsValid) return View(model);
+            // Add debugging
+            if (car == null)
+            {
+                Console.WriteLine("Model is null!");
+                return View();
+            }
 
-            var (status, message) = await _carService.CreateCarAsync(model);
+            Console.WriteLine($"Brand: {car.Brand}, Model: {car.Model}, Year: {car.Year}");
+
+            if (!ModelState.IsValid)
+            {
+                foreach (var error in ModelState.Values.SelectMany(v => v.Errors))
+                {
+                    Console.WriteLine($"Validation Error: {error.ErrorMessage}");
+                }
+                return View(car);
+            }
+
+            var (status, message) = await _carService.CreateCarAsync(car);
             if (!status)
             {
                 ModelState.AddModelError("", message);
-                return View(model);
+                return View(car);
             }
 
+            TempData["Success"] = "Car added successfully!";
             return RedirectToAction(nameof(Index));
         }
 
         [HttpGet]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Edit(int id)
         {
             var (status, message, car) = await _carService.GetCarByIdAsync(id);
-            if (!status || car == null) return NotFound();
+            if (!status || car == null)
+            {
+                TempData["Error"] = message ?? "Car not found";
+                return RedirectToAction(nameof(Index));
+            }
 
+            // Map all properties correctly
             var editModel = new EditCarModel
             {
                 Id = car.Id,
@@ -81,7 +106,11 @@ namespace Motorak.PLL.Controllers
                 Condition = car.Condition,
                 Transmission = car.Transmission,
                 Price = car.Price,
-                Type = car.Type
+                Type = car.Type,
+                Status = car.Status,      
+                Category = car.Category,       
+                DailyRentPrice = car.DailyRentPrice,  
+                ImagePath = car.ImagePath      
             };
 
             return View(editModel);
@@ -89,33 +118,67 @@ namespace Motorak.PLL.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(EditCarModel model)
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> Edit(EditCarModel car)
         {
-            if (!ModelState.IsValid) return View(model);
+            if (!ModelState.IsValid)
+            {
+                // Add debug information
+                foreach (var error in ModelState.Values.SelectMany(v => v.Errors))
+                {
+                    Console.WriteLine($"Validation Error: {error.ErrorMessage}");
+                }
+                return View(car);
+            }
 
-            var (status, message) = await _carService.UpdateCarAsync(model);
+            var (status, message) = await _carService.UpdateCarAsync(car);
             if (!status)
             {
                 ModelState.AddModelError("", message);
-                return View(model);
+                return View(car);
             }
 
+            TempData["Success"] = "Car updated successfully!";
             return RedirectToAction(nameof(Index));
         }
-
 
         [HttpGet]
         public async Task<IActionResult> Delete(int id)
         {
-            var (status, message) = await _carService.DeleteCarAsync(id);
-            if (!status)
+            var result = await _carService.GetCarByIdAsync(id);
+
+            if (!result.status)
             {
-                TempData["Error"] = message;
-                return RedirectToAction(nameof(Index));
+                TempData["ErrorMessage"] = result.message;
+                return RedirectToAction("Index");
             }
 
-            TempData["Success"] = message;
-            return RedirectToAction(nameof(Index));
+            return View(result.Car);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Delete(int id, IFormCollection collection)
+        {
+            try
+            {
+                var result = await _carService.DeleteCarAsync(id);
+
+                if (result.status)
+                {
+                    TempData["SuccessMessage"] = result.message;
+                }
+                else
+                {
+                    TempData["ErrorMessage"] = result.message;
+                }
+            }
+            catch (Exception ex)
+            {
+                TempData["ErrorMessage"] = $"An error occurred: {ex.Message}";
+            }
+
+            return RedirectToAction("Index");
         }
 
         [Authorize]
