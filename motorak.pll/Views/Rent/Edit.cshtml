@@ -1,53 +1,176 @@
 ﻿@using Motorak.BLL.ModelVM.Rents
+@using Motorak.DAL.Enums.TransactionEnums
 @model RentUpdateDto
 
 @{
-    ViewData["Title"] = "Edit Rent";
-    Layout = "~/Views/Shared/_Layout.cshtml";
+    ViewData["Title"] = "Update Agreement";
+    Layout = "_MotorakIndex";
 }
 
-<div class="container mt-4">
-    <h2 class="text-primary mb-4">✏️ Edit Rent</h2>
+<style>
+    :root {
+        --gold: #fbbf24;
+        --gold-bright: #fcd34d;
+        --white-pure: #ffffff;
+        --glass: rgba(10, 15, 26, 0.98); /* Darker background for maximum contrast */
+    }
 
-    <div class="card shadow rounded">
-        <div class="card-body">
-            <form asp-action="Edit" method="post">
-                <input type="hidden" asp-for="Id" />
+    .edit-page-wrapper {
+        min-height: 90vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 40px 20px;
+        background: radial-gradient(circle at top right, rgba(251, 191, 36, 0.1), transparent 600px);
+    }
 
-                <div class="mb-3">
-                    <label asp-for="PaymentMethod" class="form-label fw-bold"></label>
-                    <input asp-for="PaymentMethod" class="form-control" />
-                    <span asp-validation-for="PaymentMethod" class="text-danger"></span>
-                </div>
+    .luxury-card {
+        background: var(--glass);
+        backdrop-filter: blur(25px);
+        border: 2px solid rgba(251, 191, 36, 0.3); /* Thicker border */
+        border-radius: 40px;
+        padding: 4rem;
+        width: 100%;
+        max-width: 580px;
+        box-shadow: 0 40px 80px rgba(0, 0, 0, 0.8);
+    }
 
-                <div class="mb-3">
-                    <label asp-for="TotalPrice" class="form-label fw-bold"></label>
-                    <input asp-for="TotalPrice" class="form-control" type="number" />
-                    <span asp-validation-for="TotalPrice" class="text-danger"></span>
-                </div>
+    .section-label {
+        color: var(--gold-bright); /* Brighter gold */
+        font-size: 0.85rem;
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: 2px;
+        margin-bottom: 0.8rem;
+        display: block;
+        text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+    }
 
-                <div class="mb-3">
-                    <label asp-for="Status" class="form-label fw-bold"></label>
-                    <select asp-for="Status" class="form-select" asp-items="Html.GetEnumSelectList<Motorak.DAL.Enums.TransactionEnums.TransactionStatus>()">
-                        <option value="">-- Select Status --</option>
-                    </select>
-                    <span asp-validation-for="Status" class="text-danger"></span>
-                </div>
+    .lux-input {
+        background: rgba(255, 255, 255, 0.05) !important;
+        border: 2px solid rgba(255, 255, 255, 0.2) !important; /* High contrast border */
+        color: var(--white-pure) !important; /* Pure white text */
+        border-radius: 16px !important;
+        padding: 1.1rem 1.3rem !important;
+        font-size: 1.1rem !important;
+        font-weight: 500 !important;
+    }
 
-                <div class="d-flex justify-content-between mt-4">
-                    <a asp-action="Index" class="btn btn-secondary">
-                        <i class="bi bi-arrow-left"></i> Back to List
-                    </a>
-                    <button type="submit" class="btn btn-primary">
-                        <i class="bi bi-save"></i> Save Changes
-                    </button>
-                </div>
-            </form>
+        .lux-input:focus {
+            border-color: var(--gold) !important;
+            background: rgba(251, 191, 36, 0.1) !important;
+            box-shadow: 0 0 25px rgba(251, 191, 36, 0.3) !important;
+        }
+
+        /* Styling for the dropdown options to ensure they are visible */
+        .lux-input option {
+            background-color: #0f172a;
+            color: white;
+        }
+
+    .btn-lux-gold {
+        background: linear-gradient(135deg, #fbbf24 0%, #d97706 100%);
+        color: #000 !important;
+        font-weight: 900;
+        text-transform: uppercase;
+        letter-spacing: 1.5px;
+        border-radius: 16px;
+        padding: 1.3rem;
+        border: none;
+        width: 100%;
+        margin-top: 2rem;
+        transition: 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        cursor: pointer;
+    }
+
+        .btn-lux-gold:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 40px rgba(251, 191, 36, 0.4);
+            filter: brightness(1.1);
+        }
+
+    .text-muted-custom {
+        color: #cbd5e1 !important; /* Much lighter than standard muted for contrast */
+        font-size: 0.95rem;
+    }
+
+    .header-badge {
+        background: rgba(251, 191, 36, 0.15);
+        color: var(--gold-bright);
+        padding: 8px 20px;
+        border-radius: 50px;
+        font-size: 0.75rem;
+        font-weight: 900;
+        margin-bottom: 1.5rem;
+        display: inline-block;
+        border: 1px solid var(--gold);
+    }
+
+    .price-symbol {
+        position: absolute;
+        left: 1.2rem;
+        top: 1.1rem;
+        color: var(--gold-bright);
+        font-weight: 900;
+        font-size: 1.1rem;
+    }
+</style>
+
+<div class="edit-page-wrapper">
+    <div class="luxury-card">
+        <div class="text-center mb-5">
+            <span class="header-badge">ADMINISTRATION PORTAL</span>
+            <h1 class="fw-900 text-white" style="font-family: 'Exo 2', sans-serif; font-size: 2.5rem; margin-bottom: 1rem;">Adjust Agreement</h1>
+            <p class="text-muted-custom">Modify contract details for Reference <b class="text-white">#@Model.Id</b></p>
         </div>
+
+        <form asp-action="Edit" method="post">
+            @Html.AntiForgeryToken()
+            <input type="hidden" asp-for="Id" />
+
+            <div class="mb-4">
+                <label class="section-label">Transaction Status</label>
+                <select asp-for="Status" class="form-select lux-input">
+                    @foreach (var status in Enum.GetValues(typeof(TransactionStatus)))
+                    {
+                        <option value="@status">@status</option>
+                    }
+                </select>
+                <span asp-validation-for="Status" class="text-danger fw-bold small mt-2 d-block"></span>
+            </div>
+
+            <div class="mb-4">
+                <label class="section-label">Payment Gateway</label>
+                <select asp-for="PaymentMethod" class="form-select lux-input">
+                    <option value="" disabled>-- Select Payment Type --</option>
+                    <option value="Visa / Mastercard">Visa / Mastercard</option>
+                    <option value="PayPal">PayPal</option>
+                    <option value="Bank Transfer">Bank Transfer</option>
+                    <option value="Cash on Pickup">Cash on Pickup</option>
+                    <option value="Apple/Google Pay">Apple/Google Pay</option>
+                </select>
+                <span asp-validation-for="PaymentMethod" class="text-danger fw-bold small mt-2 d-block"></span>
+            </div>
+
+            <div class="mb-4">
+                <label class="section-label">Adjusted Total Price</label>
+                <div class="position-relative">
+                    <span class="price-symbol">$</span>
+                    <input asp-for="TotalPrice" class="form-control lux-input" style="padding-left: 2.8rem !important;" type="number" step="0.01" />
+                </div>
+                <span asp-validation-for="TotalPrice" class="text-danger fw-bold small mt-2 d-block"></span>
+            </div>
+
+            <div class="pt-3">
+                <button type="submit" class="btn-lux-gold">Save Changes</button>
+                <a asp-action="Index" class="btn-lux-outline" style="display:block; text-align:center; color: #94a3b8; text-decoration:none; margin-top:1.5rem; font-weight:700;">Discard and Exit</a>
+            </div>
+        </form>
     </div>
 </div>
 
 @section Scripts {
-    <partial name="_ValidationScriptsPartial" />
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet" />
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
 }

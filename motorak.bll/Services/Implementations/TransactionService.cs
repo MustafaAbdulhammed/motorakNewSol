@@ -22,11 +22,17 @@ namespace Motorak.BLL.Services.Implementations
 
         public async Task<int> AddAsync(TransactionCreateDto dto)
         {
-            
-            var result = _mapper.Map<Transactions>(dto);
-            await _transactionRepo.AddAsync(result);
 
-            return result.Id;
+            var transaction = new Transactions(
+                dto.PaymentMethod,
+                dto.TotalPrice,
+                dto.CustomerId,  // Make sure your DTO has this
+                dto.CarId,       // Make sure your DTO has this
+                "System"
+            );
+            await _transactionRepo.AddAsync(transaction);
+
+            return transaction.Id;
         }
 
         public async Task DeleteAsync(int id)
@@ -55,6 +61,9 @@ namespace Motorak.BLL.Services.Implementations
             if (result == null)
                 throw new InvalidOperationException("Transaction not found");
             result.UpdateTransaction(dto.PaymentMethod, dto.TotalPrice, dto.Status);
+
+            await _transactionRepo.UpdateAsync(result);
+
 
         }
     }

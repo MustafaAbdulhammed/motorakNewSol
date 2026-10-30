@@ -134,7 +134,7 @@ namespace Motorak.PLL.Controllers
                     return RedirectToAction("Index");
                 }
 
-                if (service.Status != Status.pending)
+                if (service.Status != Status.Pending)
                 {
                     TempData["ErrorMessage"] = "This service is not pending and cannot be accepted.";
                     return RedirectToAction("Index");
@@ -143,7 +143,7 @@ namespace Motorak.PLL.Controllers
                 var updateModel = new UpdateServiceVM
                 {
                     ServiceId = service.ServiceId,
-                    Status = Status.completed,
+                    Status = Status.Completed,
                     RequestDate = service.CreatedDate,
                     ServiceType = service.ServiceType
                 };
@@ -180,7 +180,7 @@ namespace Motorak.PLL.Controllers
                     return RedirectToAction("Index");
                 }
 
-                if (service.Status != Status.pending)
+                if (service.Status != Status.Pending)
                 {
                     TempData["ErrorMessage"] = "This service is not pending and cannot be rejected.";
                     return RedirectToAction("Index");
@@ -189,7 +189,7 @@ namespace Motorak.PLL.Controllers
                 var updateModel = new UpdateServiceVM
                 {
                     ServiceId = service.ServiceId,
-                    Status = Status.cancelled,
+                    Status = Status.Cancelled,
                     RequestDate = service.CreatedDate,
                     ServiceType = service.ServiceType
                 };

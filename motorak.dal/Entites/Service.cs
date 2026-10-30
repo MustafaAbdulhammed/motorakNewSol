@@ -32,6 +32,7 @@ namespace Motorak.DAL.Entites
 
         public virtual List<ServiceReview>? ServiceReviews { get; set; }
 
+        // In motorak.dal/Entites/Service.cs constructor, update the default:
         public Service(
             DateTime requestDate,
             ServiceType serviceType,
@@ -43,7 +44,7 @@ namespace Motorak.DAL.Entites
             CreatedAt = DateTime.Now;
             IsDeleted = false;
             ServiceType = serviceType;
-            Status = Status.Pending;
+            Status = Status.Pending;  // ✅ was Status.Pending (already correct, but now enum only has one Pending)
             CustomerId = customerId;
             MechanicId = mechanicId;
             CarId = carId;

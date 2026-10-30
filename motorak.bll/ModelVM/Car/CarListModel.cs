@@ -15,5 +15,12 @@ namespace Motorak.BLL.ModelVM.Car
         public CarStatus Status { get; set; }
         public CarCategory Category { get; set; }   // ForSale / ForRent
         public string? ImagePath { get; set; }
+
+
+
+        public string Color { get; set; }
+        public CarType Type { get; set; }
+        public CarTransmission Transmission { get; set; }
+        public CarCondition Condition { get; set; }
     }
 }

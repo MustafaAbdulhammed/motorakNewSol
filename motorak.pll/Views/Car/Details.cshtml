@@ -1,317 +1,364 @@
-﻿﻿@using Microsoft.AspNetCore.Identity
-@using Motorak.DAL.Entites
-@using motorak.dal.Entites
+﻿@using Motorak.BLL.ModelVM.Car;
+@using Motorak.DAL.Enums.CarEnums;
 @using motorak.dal.Enums.CarEnums
-@using Motorak.DAL.Enums.CarEnums
-@using Motorak.BLL.ModelVM.Car
-
-@inject SignInManager<User> SignInManager
-@inject UserManager<User> UserManager
-
 @model CarDetailsModel
 
 @{
-    ViewData["Title"] = $"{Model.Brand} {Model.Model}";
+    ViewData["Title"] = $"{Model.Brand} {Model.Model} - Details";
+    Layout = "_MotorakIndex";
 }
-<link rel="stylesheet" href="~/css/car.css">
 
-<section class="car-details section">
+<style>
+    :root {
+        --gold: #fbbf24;
+        --gold-hover: #f59e0b;
+        --dark-card: rgba(10, 18, 35, 0.85);
+        --glass-border: rgba(251, 191, 36, 0.2);
+    }
+
+    .car-details-page {
+        padding: 40px 0;
+        color: #e2e8f0;
+    }
+
+    /* Hero Title Section */
+    .vehicle-header {
+        margin-bottom: 30px;
+        padding-bottom: 20px;
+        border-bottom: 1px solid var(--glass-border);
+    }
+
+    .vehicle-title {
+        font-size: 2.5rem;
+        font-weight: 800;
+        background: linear-gradient(to right, #fff, var(--gold));
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+    }
+
+    /* Main Container Styles */
+    .glass-card {
+        background: var(--dark-card);
+        backdrop-filter: blur(20px);
+        border: 1px solid var(--glass-border);
+        border-radius: 24px;
+        box-shadow: 0 20px 50px rgba(0,0,0,0.3);
+        margin-bottom: 24px;
+        transition: border-color 0.3s ease;
+    }
+
+        .glass-card:hover {
+            border-color: rgba(251, 191, 36, 0.4);
+        }
+
+    /* Image Styling */
+    .main-image-wrapper {
+        position: relative;
+        border-radius: 24px;
+        overflow: hidden;
+        height: 500px;
+    }
+
+    .main-car-img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: transform 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .main-image-wrapper:hover .main-car-img {
+        transform: scale(1.05);
+    }
+
+    /* Quick Specs Bar */
+    .quick-specs {
+        display: flex;
+        justify-content: space-around;
+        padding: 20px;
+        background: rgba(251, 191, 36, 0.05);
+        border-top: 1px solid var(--glass-border);
+    }
+
+    .spec-item {
+        text-align: center;
+    }
+
+        .spec-item i {
+            color: var(--gold);
+            font-size: 1.5rem;
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        .spec-item span {
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            color: #94a3b8;
+        }
+
+        .spec-item p {
+            margin: 0;
+            font-weight: 700;
+        }
+
+    /* --- NEW ACTION TILES STYLES --- */
+    .action-tile {
+        background: rgba(255, 255, 255, 0.03);
+        border: 1px solid rgba(251, 191, 36, 0.1);
+        border-radius: 16px;
+        padding: 16px;
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        cursor: pointer;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        margin-bottom: 12px;
+    }
+
+        .action-tile:hover {
+            background: rgba(251, 191, 36, 0.08);
+            border-color: var(--gold);
+            transform: translateX(5px);
+        }
+
+    .tile-icon {
+        width: 45px;
+        height: 45px;
+        background: rgba(251, 191, 36, 0.1);
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.4rem;
+        color: var(--gold);
+    }
+
+    .tile-label {
+        display: block;
+        font-size: 0.7rem;
+        color: #94a3b8;
+        font-weight: 600;
+        text-transform: uppercase;
+    }
+
+    .tile-price {
+        font-size: 1.2rem;
+        font-weight: 800;
+        color: #fff;
+    }
+
+        .tile-price small {
+            font-size: 0.75rem;
+            color: #94a3b8;
+            font-weight: 400;
+        }
+
+    .btn-sec-action {
+        background: transparent;
+        border: 1px solid rgba(255,255,255,0.1);
+        color: #e2e8f0;
+        padding: 10px;
+        border-radius: 10px;
+        font-size: 0.8rem;
+        transition: all 0.2s;
+    }
+
+        .btn-sec-action:hover {
+            border-color: var(--gold);
+            color: var(--gold);
+        }
+
+    /* Table Styling */
+    .info-table {
+        width: 100%;
+    }
+
+        .info-table td {
+            padding: 12px 0;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+        }
+
+        .info-table .label {
+            color: #94a3b8;
+            font-weight: 500;
+        }
+
+        .info-table .value {
+            text-align: right;
+            font-weight: 600;
+        }
+
+    .sticky-box {
+        position: sticky;
+        top: 100px;
+    }
+</style>
+
+<div class="car-details-page">
     <div class="container">
-        <!-- Breadcrumb -->
-        <nav class="breadcrumb">
-            <a asp-controller="Home" asp-action="Index" class="breadcrumb-link">
-                <i class="ri-home-line"></i> Home
-            </a>
-            <span class="breadcrumb-separator"><i class="ri-arrow-right-s-line"></i></span>
-            <a asp-controller="Car" asp-action="Index" class="breadcrumb-link">Cars</a>
-            <span class="breadcrumb-separator"><i class="ri-arrow-right-s-line"></i></span>
-            <span class="breadcrumb-current">@Model.Brand @Model.Model</span>
-        </nav>
 
-        <div class="car-details__container">
-            <!-- Car Image Section -->
-            <div class="car-image-section">
-                <div class="main-image-container">
-                    <div class="shape shape__smaller"></div>
-                    <div class="car-image-container">
-                        <img src="@Url.Content("~/" + (@Model.ImagePath ?? "assets/img/default-car.jpg"))"
-                             alt="@Model.Brand @Model.Model"
-                             class="featured__img car-image">
+        <div class="vehicle-header d-flex justify-content-between align-items-end">
+            <div>
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb" style="background:transparent; padding:0;">
+                        <li class="breadcrumb-item"><a href="/Car" class="text-gold">Inventory</a></li>
+                        <li class="breadcrumb-item active text-white">@Model.Brand</li>
+                    </ol>
+                </nav>
+                <h1 class="vehicle-title">@Model.Brand @Model.Model</h1>
+                <div class="d-flex gap-2 mt-2">
+                    <span class="badge" style="background: rgba(59,130,246,0.1); color: #60a5fa; border: 1px solid #3b82f6;">@Model.Year</span>
+                    <span class="badge" style="background: rgba(16,185,129,0.1); color: #34d399; border: 1px solid #10b981;">@Model.Condition</span>
+                </div>
+            </div>
+            <div class="text-end">
+                <span class="text-muted d-block small">LISTING ID: #MT-@Model.Id.ToString("D4")</span>
+                <span class="text-white"><i class="ri-map-pin-2-line text-gold"></i> Cairo, Giza</span>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-lg-8">
+                <div class="glass-card overflow-hidden">
+                    <div class="main-image-wrapper">
+                        <img src="@(Model.ImagePath ?? "/assets/img/default-car.png")" class="main-car-img" alt="Vehicle Image">
                     </div>
-                    <!-- Status badges -->
-                    <div class="status-badges">
-                        <span class="status-badge category-badge category-@Model.Category.ToString().ToLower()">
-                            <i class="@(Model.Category == CarCategory.ForSale ? "ri-shopping-bag-line" : "ri-calendar-line")"></i>
-                            @Model.Category.ToString().Replace("For", "For ")
-                        </span>
-                        <span class="status-badge car-status status-@Model.Status.ToString().ToLower()">
-                            <i class="ri-checkbox-circle-line"></i> @Model.Status
-                        </span>
+
+                    <div class="quick-specs">
+                        <div class="spec-item">
+                            <i class="ri-dashboard-3-line"></i>
+                            <span>Mileage</span>
+                            <p>@Model.Mileage.ToString("N0") km</p>
+                        </div>
+                        <div class="spec-item">
+                            <i class="ri-settings-5-line"></i>
+                            <span>Transmission</span>
+                            <p>@Model.Transmission</p>
+                        </div>
+                        <div class="spec-item">
+                            <i class="ri-gas-station-fill"></i>
+                            <span>Fuel</span>
+                            <p>Petrol</p>
+                        </div>
+                        <div class="spec-item">
+                            <i class="ri-palette-line"></i>
+                            <span>Color</span>
+                            <p>@Model.Color</p>
+                        </div>
                     </div>
                 </div>
 
-                @* <!-- Thumbnail gallery (if multiple images available) -->
-                <div class="image-gallery">
-                    <div class="thumbnail active" onclick="changeImage(this, '@Url.Content(Model.ImagePath ?? "~/assets/img/featured1.png")')">
-                        <img src="@Url.Content(Model.ImagePath ?? "~/assets/img/featured1.png")" alt="Main view">
+                <div class="glass-card p-4">
+                    <h4 class="text-gold mb-4"><i class="ri-information-fill"></i> Vehicle Specifications</h4>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <table class="info-table">
+                                <tr><td class="label">Body Type</td><td class="value">@Model.Type</td></tr>
+                                <tr><td class="label">Engine Size</td><td class="value">2.0L Turbo</td></tr>
+                                <tr><td class="label">Doors</td><td class="value">4 Doors</td></tr>
+                            </table>
+                        </div>
+                        <div class="col-md-6">
+                            <table class="info-table">
+                                <tr><td class="label">Interior Color</td><td class="value">Premium Black</td></tr>
+                                <tr><td class="label">Drive Type</td><td class="value">AWD</td></tr>
+                                <tr><td class="label">Status</td><td class="value text-success">@Model.Status</td></tr>
+                            </table>
+                        </div>
                     </div>
-                    <!-- Add more thumbnails here if you have multiple images -->
-                </div> *@
+                }
             </div>
 
-            <!-- Car Information Section -->
-            <div class="car-info-section">
-                <div class="car-header">
-                    <h1 class="car-title">@Model.Brand <span class="car-model">@Model.Model</span></h1>
-                    <div class="car-year">@Model.Year Model</div>
-                    <div class="car-pricing">
-                        <div class="price-section">
-                            <span class="price-label">Purchase Price:</span>
-                            <span class="price-value">$@Model.Price.ToString("N0")</span>
-                        </div>
-                        @if (Model.DailyRentPrice.HasValue)
+            <div class="col-lg-4">
+                <div class="sticky-box">
+                    <div class="glass-card p-4">
+                        <h6 class="text-gold mb-4 fw-bold" style="letter-spacing:1px;">TRANSACTION OPTIONS</h6>
+
+                        @if (User.Identity.IsAuthenticated)
                         {
-                            <div class="rent-price-section">
-                                <span class="rent-price-label">Daily Rental:</span>
-                                <span class="rent-price-value">$@Model.DailyRentPrice.Value.ToString("N0")/day</span>
-                            </div>
+                            @if (Model.Category == CarCategory.ForSale || Model.Category == CarCategory.Both)
+                            {
+                                <div class="action-tile" onclick="addToCartDirect(@Model.Id, 'Buy')">
+                                    <div class="tile-icon"><i class="ri-bank-card-line"></i></div>
+                                    <div class="tile-content">
+                                        <span class="tile-label">Buy Ownership</span>
+                                        <div class="tile-price">$@Model.Price.ToString("N0")</div>
+                                    </div>
+                                    <i class="ri-arrow-right-s-line text-muted"></i>
+                                </div>
+                            }
+
+                            @if (Model.Category == CarCategory.ForRent || Model.Category == CarCategory.Both)
+                            {
+                                <div class="action-tile" onclick="showAddToCartModal(@Model.Id, 'Rent')">
+                                    <div class="tile-icon"><i class="ri-calendar-check-line"></i></div>
+                                    <div class="tile-content">
+                                        <span class="tile-label">Rent per Day</span>
+                                        <div class="tile-price">$@(Model.DailyRentPrice?.ToString("N0") ?? "0") <small>/day</small></div>
+                                    </div>
+                                    <i class="ri-arrow-right-s-line text-muted"></i>
+                                </div>
+                            }
                         }
-                    </div>
-                </div>
-
-                <!-- Car Specifications -->
-                <div class="specifications">
-                    <h3 class="spec-title">
-                        <i class="ri-settings-line"></i> Specifications
-                    </h3>
-                    <div class="spec-grid">
-                        <div class="spec-item">
-                            <div class="spec-icon">
-                                <i class="ri-dashboard-2-line"></i>
-                            </div>
-                            <div class="spec-content">
-                                <span class="spec-label">Mileage</span>
-                                <span class="spec-value">@Model.Mileage.ToString("N0") km</span>
-                            </div>
-                        </div>
-                        <div class="spec-item">
-                            <div class="spec-icon">
-                                <i class="ri-car-line"></i>
-                            </div>
-                            <div class="spec-content">
-                                <span class="spec-label">Vehicle Type</span>
-                                <span class="spec-value">@Model.Type</span>
-                            </div>
-                        </div>
-                        <div class="spec-item">
-                            <div class="spec-icon">
-                                <i class="ri-speed-line"></i>
-                            </div>
-                            <div class="spec-content">
-                                <span class="spec-label">Transmission</span>
-                                <span class="spec-value">@Model.Transmission</span>
-                            </div>
-                        </div>
-                        <div class="spec-item">
-                            <div class="spec-icon">
-                                <i class="ri-calendar-line"></i>
-                            </div>
-                            <div class="spec-content">
-                                <span class="spec-label">Year</span>
-                                <span class="spec-value">@Model.Year</span>
-                            </div>
-                        </div>
-                        <div class="spec-item">
-                            <div class="spec-icon">
-                                <i class="ri-palette-line"></i>
-                            </div>
-                            <div class="spec-content">
-                                <span class="spec-label">Color</span>
-                                <span class="spec-value">@Model.Color</span>
-                            </div>
-                        </div>
-                        <div class="spec-item">
-                            <div class="spec-icon">
-                                <i class="ri-tools-line"></i>
-                            </div>
-                            <div class="spec-content">
-                                <span class="spec-label">Condition</span>
-                                <span class="spec-value">@Model.Condition</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Additional Information -->
-                <div class="additional-info">
-                    <h3 class="info-title">
-                        <i class="ri-information-line"></i> Additional Information
-                    </h3>
-                    <div class="info-grid">
-                        <div class="info-item">
-                            <span class="info-label">Date Added:</span>
-                            <span class="info-value">@Model.DateAdded.ToString("MMM dd, yyyy")</span>
-                        </div>
-                        <div class="info-item">
-                            <span class="info-label">Category:</span>
-                            <span class="info-value">@Model.Category.ToString().Replace("For", "For ")</span>
-                        </div>
-                        <div class="info-item">
-                            <span class="info-label">Current Status:</span>
-                            <span class="info-value status-@Model.Status.ToString().ToLower()">@Model.Status</span>
-                        </div>
-                        @if (!string.IsNullOrEmpty(Model.OwnerName))
+                        else
                         {
-                            <div class="info-item">
-                                <span class="info-label">Owner:</span>
-                                <span class="info-value">@Model.OwnerName</span>
-                            </div>
+                            <a href="/Identity/Account/Login" class="btn btn-primary-gold w-100 py-3 fw-bold rounded-pill text-dark text-decoration-none d-block text-center">
+                                LOGIN TO VIEW OPTIONS
+                            </a>
                         }
+
+                        <div class="d-flex gap-2 mt-3">
+                            <button class="btn-sec-action w-50" onclick="addToWishlist(@Model.Id)">
+                                <i class="ri-heart-3-line"></i> Save
+                            </button>
+                            <button class="btn-sec-action w-50" onclick="shareVehicle()">
+                                <i class="ri-share-forward-line"></i> Share
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="glass-card p-3">
+                        <div class="d-flex align-items-center gap-3">
+                            <div style="background:#10b981; color:white; width:35px; height:35px; border-radius:50%; display:flex; align-items:center; justify-content:center;">
+                                <i class="ri-shield-check-line"></i>
+                            </div>
+                            <div>
+                                <p class="mb-0 fw-bold small">Certified Listing</p>
+                                <p class="mb-0 text-muted" style="font-size: 11px;">Verified by Motorak Inspection Team</p>
+                            </div>
+                        </div>
                     </div>
                 </div>
-
-                <!-- Action Buttons -->
-                @if (SignInManager.IsSignedIn(User) && (User.IsInRole("Customer") || User.IsInRole("Mechanc")) && Model.Status == CarStatus.Available)
-                {
-                    <div class="action-section">
-                        <h3 class="action-title">
-                            <i class="ri-shopping-cart-line"></i> Take Action
-                        </h3>
-                        <div class="action-buttons">
-                            @if (Model.Category == CarCategory.ForSale || Model.Category == CarCategory.Buy)
-                            {
-                                <button class="action-btn buy-btn" onclick="addToCart(@Model.Id, 'buy')">
-                                    <i class="ri-shopping-bag-line"></i>
-                                    <div class="btn-content">
-                                        <span>Add to Cart (Purchase)</span>
-                                        <small>Buy this vehicle for $@Model.Price.ToString("N0")</small>
-                                    </div>
-                                </button>
-                            }
-                            @if ((Model.Category == CarCategory.ForRent || Model.Category == CarCategory.Rent) && Model.DailyRentPrice.HasValue)
-                            {
-                                <button class="action-btn rent-btn" onclick="showRentModal()">
-                                    <i class="ri-calendar-line"></i>
-                                    <div class="btn-content">
-                                        <span>Rent This Car</span>
-                                        <small>$@Model.DailyRentPrice.Value.ToString("N0") per day - Select rental dates</small>
-                                    </div>
-                                </button>
-                            }
-                        </div>
-                    </div>
-                }
-                else if (SignInManager.IsSignedIn(User) && Model.Status != CarStatus.Available)
-                {
-                    <div class="unavailable-section">
-                        <h3 class="unavailable-title">
-                            <i class="ri-close-circle-line"></i> Currently Unavailable
-                        </h3>
-                        <p class="unavailable-message">
-                            This car is currently <strong>@Model.Status.ToString().ToLower()</strong> and not available for purchase or rental.
-                        </p>
-                    </div>
-                }
-                else if (!SignInManager.IsSignedIn(User))
-                {
-                    <div class="auth-prompt">
-                        <h3>Want to purchase or rent this car?</h3>
-                        <p>Please sign in to add items to your cart or make a rental.</p>
-                        <div class="auth-buttons">
-                            <a href="/Identity/Account/Login" class="button">Sign In</a>
-                            <a href="/Identity/Account/Register" class="button button-outline">Create Account</a>
-                        </div>
-                    </div>
-                }
-
-                <!-- Admin Actions -->
-                @if (SignInManager.IsSignedIn(User) && User.IsInRole("Admin"))
-                {
-                    <div class="admin-section">
-                        <h3 class="admin-title">
-                            <i class="ri-admin-line"></i> Admin Actions
-                        </h3>
-                        <div class="admin-buttons">
-                            <a asp-action="Edit" asp-route-id="@Model.Id" class="admin-btn edit-btn">
-                                <i class="ri-edit-line"></i> Edit Car
-                            </a>
-                            <a asp-action="Delete" asp-route-id="@Model.Id" class="admin-btn delete-btn"
-                               onclick="return confirm('Are you sure you want to delete this car?')">
-                                <i class="ri-delete-bin-line"></i> Delete Car
-                            </a>
-                        </div>
-                    </div>
-                }
             </div>
         </div>
-        i
-        <!-- Back to Fleet Button -->
-        <div class="back-section">
-            <a asp-controller="Car" asp-action="Index" class="back-btn">
-                <i class="ri-arrow-left-line"></i> Back to Fleet
-            </a>
-        </div>
-    </div>
-</section>
-
-<!-- Rent Modal -->
-@if (Model.Category == CarCategory.ForRent && Model.DailyRentPrice.HasValue && SignInManager.IsSignedIn(User) && Model.Status == CarStatus.Available)
-{
-    <div id="rentModal" class="modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3>Rent @Model.Brand @Model.Model</h3>
-                <span class="close" onclick="closeRentModal()">&times;</span>
-            </div>
-            <div class="modal-body">
-                <form id="rentForm">
-                    <div class="form-group">
-                        <label for="startDate">Start Date:</label>
-                        <input type="date" id="startDate" name="startDate" required
-                               min="@DateTime.Today.ToString("yyyy-MM-dd")">
-                    </div>
-                    <div class="form-group">
-                        <label for="endDate">End Date:</label>
-                        <input type="date" id="endDate" name="endDate" required
-                               min="@DateTime.Today.AddDays(1).ToString("yyyy-MM-dd")">
-                    </div>
-                    <div class="rental-summary">
-                        <div class="summary-item">
-                            <span>Daily Rate:</span>
-                            <span>$@Model.DailyRentPrice.Value.ToString("N2")</span>
-                        </div>
-                        <div class="summary-item">
-                            <span>Number of Days:</span>
-                            <span id="numberOfDays">0</span>
-                        </div>
-                        <div class="summary-item total">
-                            <span>Total Cost:</span>
-                            <span id="totalCost">$0.00</span>
-                        </div>
-                    </div>
-                    <div class="modal-actions">
-                        <button type="button" class="button button-outline" onclick="closeRentModal()">Cancel</button>
-                        <button type="submit" class="button">Add to Cart</button>
-                    </div>
-                </form>
-            </div>
-        </div>
-    </div>
-}
-
-<!-- Notification -->
-<div id="notification" class="notification">
-    <div class="notification-content">
-        <i class="ri-check-line"></i>
-        <span id="notification-message">Success!</span>
     </div>
 </div>
 
-@* Anti-forgery token *@
-<form style="display:none;">
-    @Html.AntiForgeryToken()
-</form>
+@Html.Partial("_AddToCartModal")
+
 @section Scripts {
-    <script src="~/js/Car/details.js"></script>
-    
+    <script>
+        async function addToCartDirect(carId, type) {
+            try {
+                const response = await fetch('/Cart/AddToCart', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ carId: carId, itemType: type })
+                });
+                const result = await response.json();
+                alert(result.message);
+            } catch (err) {
+                alert("Error adding to cart");
+            }
+        }
+
+        function shareVehicle() {
+            navigator.clipboard.writeText(window.location.href);
+            alert("Link copied to clipboard!");
+        }
+
+        function addToWishlist(id) {
+            alert("Added to your wishlist!");
+        }
+    </script>
 }

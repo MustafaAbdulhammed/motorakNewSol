@@ -1,120 +1,100 @@
-﻿@using Motorak.BLL.Helper
-@inject IHttpContextAccessor HttpContextAccessor
+﻿@using Microsoft.AspNetCore.Identity
+@using motorak.dal.Entites
+@inject SignInManager<User> SignInManager
+@inject UserManager<User> UserManager
 
 <header class="header" id="header">
     <nav class="nav container">
         <a asp-area="" asp-controller="Home" asp-action="Index" class="nav__logo">
             <i class="ri-steering-fill"></i>
-            @SharedLocalizer["Motorak"]
+            Motorak
         </a>
+
         <div class="nav__menu" id="nav-menu">
             <ul class="nav__list">
-                @if (User.IsInRole("Admin"))
+                <li class="nav__item">
+                    <a asp-area="" asp-controller="Home" asp-action="Index" class="nav__link">Home</a>
+                </li>
+                <li class="nav__item">
+                    <a asp-controller="Service" asp-action="Index" class="nav__link">
+                        <i class="ri-service-fill"></i> Services
+                    </a>
+                </li>
+                <li class="nav__item">
+                    <a asp-controller="Mechanic" asp-action="Index" class="nav__link">
+                        <i class="ri-tools-fill"></i> Mechanics
+                    </a>
+                </li>
+                <li class="nav__item">
+                    <a asp-controller="Car" asp-action="Index" class="nav__link">
+                        <i class="ri-car-fill"></i> Cars
+                    </a>
+                </li>
+
+                @if (SignInManager.IsSignedIn(User) && User.IsInRole("Admin"))
                 {
-                    <!-- Admin Navigation -->
                     <li class="nav__item">
-                        <a asp-area="" asp-controller="Home" asp-action="Index" class="nav__link">
-                            <i class="ri-home-line"></i>
-                            @SharedLocalizer["Home"]
+                        <a asp-controller="Purchase" asp-action="Index" class="nav__link">
+                            <i class="ri-shopping-bag-line"></i> Purchases
                         </a>
                     </li>
                     <li class="nav__item">
-                        <a asp-controller="Car" asp-action="Index" class="nav__link">
-                            <i class="ri-car-fill"></i> @SharedLocalizer["Cars"]
-                        </a>
-                    </li>
-                    <li class="nav__item">
-                        <a asp-controller="Customer" asp-action="Index" class="nav__link">
-                            <i class="ri-user-3-line"></i> @SharedLocalizer["Customers"]
-                        </a>
-                    </li>
-                    <li class="nav__item">
-                        <a asp-controller="Mechanic" asp-action="Index" class="nav__link">
-                            <i class="ri-tools-fill"></i> @SharedLocalizer["Mechaincs"]
-                        </a>
-                    </li>
-                    <li class="nav__item">
-                        <a href="/Mustafa" class="nav__link" target="_blank">
-                            <i class="ri-dashboard-3-line"></i> @SharedLocalizer["Hangfire"]
-                        </a>
-                    </li>
-                    <li class="nav__item">
-                        <a asp-controller="Service" asp-action="Index" class="nav__link">
-                            <i class="ri-service-fill"></i> @SharedLocalizer["Services"]
-                        </a>
-                    </li>
-                }
-                else if (User.IsInRole("Mechanic"))
-                {
-                    <!-- Mechanic Navigation -->
-                    <li class="nav__item">
-                        <a asp-area="" asp-controller="Home" asp-action="Index" class="nav__link">
-                            <i class="ri-home-line"></i>  @SharedLocalizer["Home"]
-                        </a>
-                    </li>
-                    <li class="nav__item">
-                        <a asp-controller="Service" asp-action="Index" class="nav__link">
-                            <i class="ri-service-fill"></i> @SharedLocalizer["Services"]
-                        </a>
-                    </li>
-                    <li class="nav__item">
-                        <a asp-controller="Car" asp-action="Index" class="nav__link">
-                            <i class="ri-car-fill"></i> @SharedLocalizer["Cars"]
-                        </a>
-                    </li>
-                }
-                else if (User.IsInRole("Customer") || User.Identity.IsAuthenticated)
-                {
-                    <!-- Customer Navigation -->
-                    <li class="nav__item">
-                        <a asp-area="" asp-controller="Home" asp-action="Index" class="nav__link">
-                            <i class="ri-home-line"></i> @SharedLocalizer["Home"]
-                        </a>
-                    </li>
-                    <li class="nav__item">
-                        <a asp-controller="Car" asp-action="Index" class="nav__link">
-                            <i class="ri-car-fill"></i> @SharedLocalizer["Cars"]
-                        </a>
-                    </li>
-                    <li class="nav__item">
-                        <a asp-controller="Service" asp-action="Index" class="nav__link">
-                            <i class="ri-service-fill"></i> @SharedLocalizer["Services"]
-                        </a>
-                    </li>
-                    <li class="nav__item">
-                        <a asp-controller="Cart" asp-action="Index" class="nav__link">
-                            <i class="ri-shopping-cart-line"></i> 
-                            Cart 
-                            <span class="cart-badge" id="cart-count">
-                                @((HttpContextAccessor.HttpContext?.Session.GetObjectFromJson<List<Motorak.DAL.Entites.CartItem>>("Cart")?.Sum(c => c.Count) ?? 0))
-                            </span>
-                        </a>
-                    </li>
-                }
-                else
-                {
-                    <!-- Guest/Unauthenticated Navigation -->
-                    <li class="nav__item">
-                        <a asp-area="" asp-controller="Home" asp-action="Index" class="nav__link">
-                            <i class="ri-home-line"></i> @SharedLocalizer["Home"]
-                        </a>
-                    </li>
-                    <li class="nav__item">
-                        <a asp-controller="Car" asp-action="Index" class="nav__link">
-                            <i class="ri-car-fill"></i> @SharedLocalizer["Cars"]
-                        </a>
-                    </li>
-                    <li class="nav__item">
-                        <a asp-controller="Service" asp-action="Index" class="nav__link">
-                            <i class="ri-service-fill"></i> @SharedLocalizer["Services"]
+                        <a asp-controller="Rent" asp-action="Index" class="nav__link">
+                            <i class="ri-calendar-line"></i> Rentals
                         </a>
                     </li>
                 }
             </ul>
 
-            <!-- Authentication Partial View -->
-            <partial name="_LoginPartial" />
-            
+            <div class="nav__language">
+                @{
+                    var currentUrl = Context.Request.Path + Context.Request.QueryString;
+                }
+                <a class="lang-link" asp-controller="Home" asp-action="SetLanguage" asp-route-culture="en-US" asp-route-returnUrl="@currentUrl">
+                    <img src="~/assets/img/US_Flag.png" width="20" height="12" alt="English" />
+                    <span>EN</span>
+                </a>
+                <a class="lang-link" asp-controller="Home" asp-action="SetLanguage" asp-route-culture="ar-EG" asp-route-returnUrl="@currentUrl">
+                    <img src="~/assets/img/EG_Flag.png" width="20" height="12" alt="Arabic" />
+                    <span>AR</span>
+                </a>
+            </div>
+
+            <div class="nav__auth">
+                @if (SignInManager.IsSignedIn(User))
+                {
+                    var user = await UserManager.GetUserAsync(User);
+                    var userName = user?.UserName ?? "User";
+                    // Improvement: Better logic for initials (Handle single-character names safely)
+                    var initials = userName.Length >= 2 ? userName.Substring(0, 2).ToUpper() : userName.ToUpper();
+
+                    <div class="nav__user-container">
+                        <a id="manage" asp-area="Identity" asp-page="/Account/Manage/Index" title="Manage Account" class="nav__user">
+                            <div class="nav__user-avatar">@initials</div>
+                            <span class="nav__username">@userName</span>
+                        </a>
+
+                        <form id="logoutForm" class="form-inline" asp-area="Identity" asp-page="/Account/Logout" asp-route-returnUrl="@Url.Action("Index", "Home", new { area = "" })">
+                            <button id="logout" type="submit" class="nav__logout-btn">
+                                <i class="ri-logout-circle-line"></i>
+                                Logout
+                            </button>
+                        </form>
+                    </div>
+                }
+                else
+                {
+                    <div class="nav__auth-links">
+                        <a id="register" asp-area="Identity" asp-page="/Account/Register" class="nav__register">
+                            <i class="ri-user-add-line"></i> Register
+                        </a>
+                        <a id="login" asp-area="Identity" asp-page="/Account/Login" class="nav__login">
+                            <i class="ri-login-circle-line"></i> Sign In
+                        </a>
+                    </div>
+                }
+            </div>
+
             <div class="nav__close" id="nav-close">
                 <i class="ri-close-line"></i>
             </div>
@@ -125,205 +105,115 @@
         </div>
 
     </nav>
-
-    <a class="dropdown-item d-flex justify-content-between"
-    href="@Url.Action("SetLanguage", "Home", new {
-                    culture = "en-US",
-                    returnUrl = Context.Request.Path + Context.Request.QueryString
-                })">
-    <img src="~/assets/img/US_Flag.png" width="25" height="15" class="mt-1" />
-    <span>English</span>
-</a>
-<a class="dropdown-item d-flex justify-content-between"
-    href="@Url.Action("SetLanguage", "Home", new {
-                    culture = "ar-EG",
-                    returnUrl = Context.Request.Path + Context.Request.QueryString
-                })">
-    <img src="~/assets/img/EG_Flag.png" width="25" height="15" class="mt-1" />
-    <span>Arabic</span>
-</a>
 </header>
 
 <style>
-    /* Enhanced Navigation Styles */
-    .nav__link {
+    /* Improvements: Enhanced layout for the auth and language sections */
+    .nav__language {
+        display: flex;
+        gap: 0.5rem;
+        margin: 0 1rem;
+        align-items: center;
+    }
+
+    .lang-link {
+        display: flex;
+        align-items: center;
+        gap: 0.3rem;
+        padding: 0.4rem 0.6rem;
+        border-radius: 6px;
+        background: rgba(251,191,36,0.1);
+        color: #fbbf24;
+        font-size: 0.85rem;
+        font-weight: 600;
+        transition: 0.3s;
+    }
+
+        .lang-link:hover {
+            background: #fbbf24;
+            color: #1c1008;
+        }
+
+    .nav__auth {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+    }
+
+    .nav__user-container {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+
+    .nav__user {
         display: flex;
         align-items: center;
         gap: 0.5rem;
-        padding: 0.75rem 1rem;
-        border-radius: 0.5rem;
-        transition: all 0.3s ease;
-        position: relative;
+        color: #fbbf24;
+        font-weight: 500;
     }
 
-    .nav__link:hover {
-        background: rgba(var(--first-color-rgb), 0.1);
-        color: var(--first-color);
-        transform: translateY(-2px);
-    }
-
-    /* Cart Badge Styling */
-    .cart-badge {
-        background: var(--first-color);
-        color: var(--white-color);
-        font-size: 0.75rem;
-        font-weight: 600;
-        padding: 0.25rem 0.5rem;
-        border-radius: 50px;
-        min-width: 1.5rem;
-        text-align: center;
-        margin-left: 0.25rem;
-        animation: pulse 2s infinite;
-    }
-
-    .cart-badge:empty {
-        display: none;
-    }
-
-    /* Role-specific styling */
-    .nav__list {
-        gap: 0.5rem;
-    }
-
-    /* Admin specific styles */
-    body:has(.nav__link[href*="hangfire"]) .nav__link[href*="hangfire"] {
-        background: linear-gradient(135deg, #8b5cf6, #7c3aed);
-        color: var(--white-color);
-        border-radius: 0.5rem;
-    }
-
-    body:has(.nav__link[href*="hangfire"]) .nav__link[href*="hangfire"]:hover {
-        background: linear-gradient(135deg, #7c3aed, #6d28d9);
-        transform: translateY(-2px);
-        box-shadow: 0 4px 12px rgba(139, 92, 246, 0.3);
-    }
-
-    /* Mechanic Dashboard styling */
-    .nav__link[href*="Dashboard"] {
-        background: rgba(var(--first-color-rgb), 0.1);
-        border: 1px solid rgba(var(--first-color-rgb), 0.2);
-    }
-
-    .nav__link[href*="Dashboard"]:hover {
-        background: var(--first-color);
-        color: var(--white-color);
-    }
-
-    /* Customer Account styling */
-    .nav__link[href*="Account"] {
-        background: rgba(34, 197, 94, 0.1);
-        color: #16a34a;
-        border: 1px solid rgba(34, 197, 94, 0.2);
-    }
-
-    .nav__link[href*="Account"]:hover {
-        background: #16a34a;
-        color: var(--white-color);
-    }
-
-    /* Active link styling */
-    .nav__link.active {
-        background: var(--first-color);
-        color: var(--white-color);
-        font-weight: 600;
-    }
-
-    .nav__link.active::after {
-        content: '';
-        position: absolute;
-        bottom: -0.5rem;
-        left: 50%;
-        transform: translateX(-50%);
-        width: 0.5rem;
-        height: 0.5rem;
-        background: var(--first-color);
+    .nav__user-avatar {
+        width: 35px;
+        height: 35px;
         border-radius: 50%;
+        background: linear-gradient(135deg, #fbbf24, #d97706);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #1c1008;
+        font-size: 0.8rem;
+        box-shadow: 0 2px 8px rgba(217, 119, 6, 0.3);
     }
 
-
-    /* Role indicator badges */
-    .nav__logo::after {
-        content: '';
-        position: absolute;
-        top: -0.5rem;
-        right: -0.5rem;
-        width: 0.75rem;
-        height: 0.75rem;
-        border-radius: 50%;
-        display: none;
+    .nav__logout-btn {
+        background: rgba(255, 107, 107, 0.1);
+        border: 1px solid rgba(255, 107, 107, 0.2);
+        color: #ff6b6b;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 0.4rem;
+        padding: 0.4rem 0.8rem;
+        border-radius: 6px;
+        font-size: 0.9rem;
+        transition: 0.3s;
     }
 
-    /* Show role indicator for logged-in users */
-    </style>
-
-<script>
-    document.addEventListener('DOMContentLoaded', function() {
-        // Add active class to current page link
-        const currentPath = window.location.pathname;
-        const navLinks = document.querySelectorAll('.nav__link');
-        
-        navLinks.forEach(link => {
-            const href = link.getAttribute('href');
-            if (href && currentPath.includes(href) && href !== '/') {
-                link.classList.add('active');
-            } else if (href === '/' && currentPath === '/') {
-                link.classList.add('active');
-            }
-        });
-
-        // Update cart count dynamically (if you have AJAX cart functionality)
-        function updateCartCount() {
-            fetch('/Cart/GetCartCount')
-                .then(response => response.json())
-                .then(data => {
-                    const cartBadge = document.getElementById('cart-count');
-                    if (cartBadge) {
-                        cartBadge.textContent = data.count || '';
-                        if (data.count > 0) {
-                            cartBadge.style.display = 'inline-block';
-                        } else {
-                            cartBadge.style.display = 'none';
-                        }
-                    }
-                })
-                .catch(error => console.log('Cart count update failed:', error));
+        .nav__logout-btn:hover {
+            background: #ff6b6b;
+            color: #fff;
         }
 
-        // Update cart count every 30 seconds for active users
-        @if (User.Identity.IsAuthenticated)
-        {
-            <text>
-            setInterval(updateCartCount, 30000);
-            </text>
+    .nav__auth-links {
+        display: flex;
+        gap: 1rem;
+    }
+
+    .nav__login, .nav__register {
+        display: flex;
+        align-items: center;
+        gap: 0.3rem;
+        color: #fbbf24;
+        font-size: 0.95rem;
+    }
+
+        .nav__login:hover, .nav__register:hover {
+            color: #fff;
         }
 
-        // Add smooth scrolling for anchor links
-        navLinks.forEach(link => {
-            link.addEventListener('click', function(e) {
-                const href = this.getAttribute('href');
-                if (href && href.startsWith('#')) {
-                    e.preventDefault();
-                    const target = document.querySelector(href);
-                    if (target) {
-                        target.scrollIntoView({
-                            behavior: 'smooth',
-                            block: 'start'
-                        });
-                    }
-                }
-            });
-        });
+    /* Media query for mobile responsiveness */
+    @@media screen and (max-width: 767px) {
+        .nav__auth, .nav__language {
+            flex-direction: column;
+            align-items: flex-start;
+            margin: 1rem 0;
+        }
 
-        // Mobile menu auto-close on link click
-        const navClose = document.getElementById('nav-close');
-        const navMenu = document.getElementById('nav-menu');
-        
-        navLinks.forEach(link => {
-            link.addEventListener('click', () => {
-                if (window.innerWidth <= 767) {
-                    navMenu.classList.remove('show-menu');
-                }
-            });
-        });
-    });
-</script>
+        .nav__user-container {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+    }
+</style>

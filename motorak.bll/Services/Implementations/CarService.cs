@@ -1,7 +1,8 @@
-﻿
+﻿// motorak.bll/Services/Implementations/CarService.cs
 using AutoMapper;
 using motorak.dal.Entites;
 using motorak.dal.Entities;
+using motorak.dal.Enums.CarEnums;
 using Motorak.BLL.Helper;
 using Motorak.BLL.ModelVM.Car;
 using Motorak.BLL.Services.Abstractions;
@@ -22,7 +23,8 @@ namespace Motorak.BLL.Services.Implementations
         private readonly ITransactionRepo _transactionRepo;
         private readonly IMapper _mapper;
 
-        public CarService(ICarRebo carRebo, ICustomerRebo customerRebo, IMapper mapper, IPurchaseRepo purchaseRepo, IRentRepo rentRepo, ITransactionRepo transactionRepo)
+        public CarService(ICarRebo carRebo, ICustomerRebo customerRebo, IMapper mapper,
+            IPurchaseRepo purchaseRepo, IRentRepo rentRepo, ITransactionRepo transactionRepo)
         {
             _carRebo = carRebo;
             _customerRebo = customerRebo;
@@ -30,7 +32,6 @@ namespace Motorak.BLL.Services.Implementations
             _purchaseRepo = purchaseRepo;
             _rentRepo = rentRepo;
             _transactionRepo = transactionRepo;
-
         }
 
         public async Task<(bool status, string messagee)> CreateCarAsync(CreateCarModel car)
@@ -39,19 +40,16 @@ namespace Motorak.BLL.Services.Implementations
             {
                 if (car == null) return (false, "Car data is null");
 
-                if (car.ImageFile != null)
-                {
-                    car.ImagePath = Upload.UploadFile("Cars", car.ImageFile);
-                }
+                
 
                 var result = _mapper.Map<Car>(car);
                 await _carRebo.CreateAsync(result);
                 await _carRebo.SaveChangesAsync();
                 return (true, "Car Created Successfully");
             }
-            catch (Exception ex) 
+            catch (Exception ex)
             {
-                return (false, $"Error Ocurred: {ex.Message}");
+                return (false, $"Error Occurred: {ex.Message}");
             }
         }
 
@@ -64,17 +62,11 @@ namespace Motorak.BLL.Services.Implementations
                     return (false, "Car not Found");
 
                 _carRebo.Delete(result);
-
                 var saveResult = await _carRebo.SaveChangesAsync();
 
-                if (saveResult > 0)
-                {
-                    return (true, "Car deleted successfully");
-                }
-                else
-                {
-                    return (false, "Failed to delete car - no changes were made");
-                }
+                return saveResult > 0
+                    ? (true, "Car deleted successfully")
+                    : (false, "Failed to delete car - no changes were made");
             }
             catch (Exception ex)
             {
@@ -87,18 +79,15 @@ namespace Motorak.BLL.Services.Implementations
             try
             {
                 var cars = await _carRebo.GetAllAsync();
-
                 if (cars == null)
-                {
                     return (false, "Could not retrieve car data.", new List<CarListModel>());
-                }
 
                 var result = _mapper.Map<List<CarListModel>>(cars);
                 return (true, "Cars retrieved successfully", result);
             }
-            catch (Exception ex) 
+            catch (Exception ex)
             {
-                return (false, $"Failed to retrieve cars : {ex.Message}", new List<CarListModel>());
+                return (false, $"Failed to retrieve cars: {ex.Message}", new List<CarListModel>());
             }
         }
 
@@ -113,10 +102,9 @@ namespace Motorak.BLL.Services.Implementations
             }
             catch (Exception ex)
             {
-                return (false, $"Failed to retrieve car : {ex.Message}", null);
+                return (false, $"Failed to retrieve car: {ex.Message}", null);
             }
         }
-
 
         public async Task<(bool status, string message)> RentCarAsync(int carId, int customerId)
         {
@@ -129,6 +117,10 @@ namespace Motorak.BLL.Services.Implementations
                 if (car.Status != CarStatus.Available)
                     return (false, "Car is not available");
 
+                // ✅ Fixed: check ForRent (and Both) correctly
+                if (car.Category != CarCategory.ForRent && car.Category != CarCategory.Both)
+                    return (false, "Car is not available for rent");
+
                 car.RentToCustomer(customerId);
                 _carRebo.Update(car);
 
@@ -136,7 +128,7 @@ namespace Motorak.BLL.Services.Implementations
                     startDate: DateTime.Now,
                     endDate: DateTime.Now.AddDays(10),
                     paymentMethod: "Online",
-                    totalPrice: car.Price,
+                    totalPrice: car.DailyRentPrice ?? car.Price,  // ✅ use DailyRentPrice if available
                     customerId: customerId,
                     carId: carId
                 );
@@ -144,7 +136,7 @@ namespace Motorak.BLL.Services.Implementations
 
                 var trans = new Transactions(
                     paymentMethod: "Online",
-                    totalPrice: car.Price,
+                    totalPrice: car.DailyRentPrice ?? car.Price,
                     customerId: customerId,
                     carId: carId
                 );
@@ -170,13 +162,17 @@ namespace Motorak.BLL.Services.Implementations
                 if (car.Status != CarStatus.Available)
                     return (false, "Car is not available");
 
+                // ✅ Fixed: check ForSale (and Both) correctly
+                if (car.Category != CarCategory.ForSale && car.Category != CarCategory.Both)
+                    return (false, "Car is not available for purchase");
+
                 car.SellToCustomer(customerId);
                 _carRebo.Update(car);
 
                 var purchase = new Purchase(
                     sellerName: "Motorak Admin",
                     paymentMethod: "Cash",
-                    totalPrice: car.Price,
+                    totalPrice: car.Price,  // ✅ decimal, no cast needed
                     customerId: customerId,
                     carId: carId
                 );
@@ -184,7 +180,7 @@ namespace Motorak.BLL.Services.Implementations
 
                 var trans = new Transactions(
                     paymentMethod: "Cash",
-                    totalPrice: (int)car.Price,
+                    totalPrice: car.Price,  // ✅ keep as decimal
                     customerId: customerId,
                     carId: carId
                 );
@@ -198,6 +194,7 @@ namespace Motorak.BLL.Services.Implementations
                 return (false, $"Failed to sell car: {ex.Message}");
             }
         }
+
         public async Task<(bool status, string message)> UpdateCarAsync(EditCarModel carModel)
         {
             try
@@ -205,12 +202,10 @@ namespace Motorak.BLL.Services.Implementations
                 if (carModel == null)
                     return (false, "Car data is null");
 
-                // Get the existing car from database
                 var existingCar = await _carRebo.GetByIdAsync(carModel.Id);
                 if (existingCar == null)
                     return (false, "Car not found");
 
-                // Manual mapping instead of AutoMapper to avoid issues
                 existingCar.Edit(
                     brand: carModel.Brand,
                     model: carModel.Model,
@@ -226,21 +221,13 @@ namespace Motorak.BLL.Services.Implementations
                     dailyRentPrice: carModel.DailyRentPrice,
                     imagePath: carModel.ImagePath
                 );
-
                 existingCar.Update();
-
                 _carRebo.Update(existingCar);
 
                 var saveResult = await _carRebo.SaveChangesAsync();
-
-                if (saveResult > 0)
-                {
-                    return (true, "Car updated successfully");
-                }
-                else
-                {
-                    return (false, "No changes were saved to the database");
-                }
+                return saveResult > 0
+                    ? (true, "Car updated successfully")
+                    : (false, "No changes were saved to the database");
             }
             catch (Exception ex)
             {

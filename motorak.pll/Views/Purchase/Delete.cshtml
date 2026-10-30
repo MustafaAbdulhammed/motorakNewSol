@@ -1,0 +1,125 @@
+﻿@using Motorak.BLL.ModelVM.Purchases
+@using Motorak.DAL.Enums.TransactionEnums
+@model PurchaseReadDto
+
+@{
+    ViewData["Title"] = "Confirm Deletion";
+    Layout = "_MotorakIndex";
+
+    // 3D Status Color Mapping
+    string statusClass = Model.Status == TransactionStatus.Completed ? "st-done" :
+                         Model.Status == TransactionStatus.Cancelled ? "st-void" : "st-wait";
+}
+
+<style>
+    .delete-container {
+        min-height: 90vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 2rem 1rem;
+    }
+
+    /* 3D Glass Warning Card */
+    .warning-card {
+        background: linear-gradient(145deg, rgba(30, 0, 0, 0.6) 0%, rgba(10, 10, 10, 0.8) 100%);
+        backdrop-filter: blur(25px);
+        border: 1px solid rgba(239, 68, 68, 0.3);
+        border-radius: 40px;
+        padding: 3.5rem;
+        box-shadow: 0 50px 100px rgba(0,0,0,0.8), inset 0 1px 1px rgba(255,255,255,0.05);
+        max-width: 550px;
+        width: 100%;
+        text-align: center;
+    }
+
+    /* Tactile Info Plate */
+    .delete-info-plate {
+        background: rgba(0,0,0,0.4);
+        border: 1px solid rgba(255,255,255,0.05);
+        border-radius: 25px;
+        padding: 2rem;
+        margin: 2rem 0;
+        box-shadow: inset 5px 5px 15px rgba(0,0,0,0.6);
+        text-align: left;
+    }
+
+    /* Excellent 3D Danger Button */
+    .btn-3d-danger {
+        background: linear-gradient(135deg, #ef4444 0%, #991b1b 100%);
+        border: none;
+        color: white;
+        font-weight: 900;
+        padding: 16px;
+        border-radius: 18px;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        box-shadow: 0 15px 30px rgba(153, 27, 27, 0.4), inset 0 -4px 0 rgba(0,0,0,0.3), inset 0 1px 1px rgba(255,255,255,0.2);
+        transition: all 0.2s ease;
+        width: 100%;
+    }
+
+        .btn-3d-danger:hover {
+            transform: translateY(-3px);
+            filter: brightness(1.1);
+        }
+
+        .btn-3d-danger:active {
+            transform: translateY(2px);
+            box-shadow: 0 5px 10px rgba(153, 27, 27, 0.4);
+        }
+
+    .btn-cancel-link {
+        color: rgba(255,255,255,0.5);
+        text-decoration: none;
+        font-weight: 600;
+        transition: 0.3s;
+        display: inline-block;
+        margin-top: 1.5rem;
+    }
+
+        .btn-cancel-link:hover {
+            color: white;
+        }
+
+    .hazard-icon {
+        font-size: 5rem;
+        color: #ef4444;
+        filter: drop-shadow(0 0 20px rgba(239, 68, 68, 0.5));
+        margin-bottom: 1.5rem;
+    }
+</style>
+
+<div class="delete-container">
+    <div class="warning-card">
+        <div class="hazard-icon">
+            <i class="bi bi-exclamation-triangle-fill"></i>
+        </div>
+
+        <h1 class="text-white fw-black mb-2">Confirm Delete</h1>
+        <p class="text-muted">You are about to permanently remove this record from the central registry.</p>
+
+        <div class="delete-info-plate">
+            <div class="d-flex justify-content-between mb-3 border-bottom border-secondary border-opacity-25 pb-2">
+                <span class="text-muted small uppercase">Reference ID</span>
+                <span class="text-white fw-bold">#@Model.Id</span>
+            </div>
+            <div class="d-flex justify-content-between mb-3">
+                <span class="text-muted small">Seller</span>
+                <span class="text-white">@Model.SellerName</span>
+            </div>
+            <div class="d-flex justify-content-between">
+                <span class="text-muted small">Final Total</span>
+                <span class="text-warning fw-black fs-5">$@Model.TotalPrice.ToString("N2")</span>
+            </div>
+        </div>
+
+        <form asp-action="Delete" asp-route-id="@Model.Id" method="post">
+            @Html.AntiForgeryToken()
+            <button type="submit" class="btn-3d-danger">
+                Yes, Destroy Record
+            </button>
+            <a asp-action="Index" class="btn-cancel-link">Abort and Keep Data</a>
+        </form>
+    </div>
+</div>

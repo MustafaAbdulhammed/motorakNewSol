@@ -7,7 +7,8 @@ namespace Motorak.BLL.ModelVM.Rents
     {
         public int Id { get; set; }
         public string PaymentMethod { get; set; }
-        public int TotalPrice { get; set; }
+        public decimal TotalPrice { get; set; }
         public TransactionStatus Status { get; set; }
+        
     }
 }

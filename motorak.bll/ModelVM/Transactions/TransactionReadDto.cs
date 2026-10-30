@@ -8,7 +8,7 @@ namespace Motorak.BLL.ModelVM.Transactions
     {
         public int Id { get; set; }
         public string PaymentMethod { get; set; }
-        public int TotalPrice { get; set; }
+        public decimal TotalPrice { get; set; }
         public TransactionStatus Status { get; set; }
         public DateTime TransactionDate { get; set; }
     }

@@ -458,15 +458,15 @@
                 <span class="stats-label">Total Services</span>
             </div>
             <div class="col-md-3 stats-item">
-                <span class="stats-number">@Model.Count(x => x.Status == Status.pending)</span>
+                <span class="stats-number">@Model.Count(x => x.Status == Status.Pending)</span>
                 <span class="stats-label">Pending</span>
             </div>
             <div class="col-md-3 stats-item">
-                <span class="stats-number">@Model.Count(x => x.Status == Status.completed)</span>
+                <span class="stats-number">@Model.Count(x => x.Status == Status.Completed)</span>
                 <span class="stats-label">Completed</span>
             </div>
             <div class="col-md-3 stats-item">
-                <span class="stats-number">@Model.Count(x => x.Status == Status.cancelled)</span>
+                <span class="stats-number">@Model.Count(x => x.Status == Status.Cancelled)</span>
                 <span class="stats-label">Cancelled</span>
             </div>
         </div>
@@ -509,21 +509,21 @@
                     <div class="service-card">
                         <div class="service-header">
                             <div class="service-id">#@item.ServiceId</div>
-                            <div class="service-status @(item.Status == Status.pending ? "status-pending" :
-                                  item.Status == Status.completed ? "status-completed" :
-                                 item.Status == Status.cancelled ? "status-cancelled" :
+                            <div class="service-status @(item.Status == Status.Pending ? "status-pending" :
+                                  item.Status == Status.Completed ? "status-completed" :
+                                 item.Status == Status.Cancelled ? "status-cancelled" :
                                    "status-unknown")">
                     @switch (item.Status)
                                 {
-                                    case Status.pending:
+                                    case Status.Pending:
                                         <i class="bi bi-hourglass-split"></i>
                                         <span>Pending</span>
                                         break;
-                                    case Status.completed:
+                                    case Status.Completed:
                                         <i class="bi bi-check-circle-fill"></i>
                                         <span>Completed</span>
                                         break;
-                                    case Status.cancelled:
+                                    case Status.Cancelled:
                                         <i class="bi bi-x-circle-fill"></i>
                                         <span>Cancelled</span>
                                         break;
@@ -582,7 +582,7 @@
                             }
                             else if (userRole == Seed.Role_Mechanic)
                             {
-                                @if (item.Status == Status.pending)
+                                @if (item.Status == Status.Pending)
                                 {
                                     <a class="action-btn btn-accept" href="@Url.Action("Accept", new { id = item.ServiceId })">
                                         <i class="bi bi-check-circle"></i> Accept
@@ -600,19 +600,19 @@
                             }
                             else if (userRole == Seed.Role_Customer)
                             {
-                                @if (item.Status == Status.completed)
+                                @if (item.Status == Status.Completed)
                                 {
                                     <a class="action-btn btn-review" href="@Url.Action("Create", "ServiceReview", new { serviceId = item.ServiceId })">
                                         <i class="bi bi-star-fill"></i> Rate Service
                                     </a>
                                 }
-                                else if (item.Status == Status.pending)
+                                else if (item.Status == Status.Pending)
                                 {
                                     <div class="text-center text-muted" style="color: rgba(255,255,255,0.5) !important;">
                                         <small><i class="bi bi-clock me-1"></i>Service in progress...</small>
                                     </div>
                                 }
-                                else if (item.Status == Status.cancelled)
+                                else if (item.Status == Status.Cancelled)
                                 {
                                     <div class="text-center text-muted" style="color: rgba(255,255,255,0.5) !important;">
                                         <small><i class="bi bi-x-circle me-1"></i>Service cancelled</small>

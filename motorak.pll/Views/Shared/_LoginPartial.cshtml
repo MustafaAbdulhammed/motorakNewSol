@@ -1,23 +1,24 @@
 ﻿@using Microsoft.AspNetCore.Identity
-@using motorak.dal.Entites;
-
+@using motorak.dal.Entites
 @inject SignInManager<User> SignInManager
 @inject UserManager<User> UserManager
+@* Assuming SharedLocalizer is injected in _ViewImports, if not, add it here *@
 
 @if (SignInManager.IsSignedIn(User))
 {
     <div class="nav__auth">
-        <a id="manage" asp-area="Identity" asp-page="/Account/Manage/Index" title="Manage Account">
+        <a id="manage" asp-area="Identity" asp-page="/Account/Manage/Index" title="@SharedLocalizer["Manage Account"]" class="nav__user-link">
             @{
-                var userName = UserManager.GetUserName(User);
-                var initials = !string.IsNullOrEmpty(userName) ? userName.Substring(0, Math.Min(2, userName.Length)).ToUpper() : "U";
+                var userName = UserManager.GetUserName(User) ?? "User";
+                // Improved logic: safe substring and handling for very short names
+                var initials = userName.Length >= 2 ? userName.Substring(0, 2).ToUpper() : userName.ToUpper();
             }
             <div class="nav__user-avatar">@initials</div>
-            <span>@userName</span>
+            <span class="nav__username">@userName</span>
         </a>
 
-        <form id="logoutForm" asp-area="Identity" asp-page="/Account/Logout" asp-route-returnUrl="@Url.Action("Index", "Home", new { area = "" })" style="display: inline;">
-            <button id="logout" type="submit">
+        <form id="logoutForm" class="nav__logout-form" asp-area="Identity" asp-page="/Account/Logout" asp-route-returnUrl="@Url.Action("Index", "Home", new { area = "" })">
+            <button id="logout" type="submit" class="nav__logout-btn">
                 <i class="ri-logout-circle-line"></i>
                 @SharedLocalizer["Logout"]
             </button>
@@ -26,14 +27,81 @@
 }
 else
 {
-    <div class="nav__auth">
-        <a id="register" asp-area="Identity" asp-page="/Account/Register">
+    <div class="nav__auth-guest">
+        <a id="register" asp-area="Identity" asp-page="/Account/Register" class="nav__auth-link">
             <i class="ri-user-add-line"></i>
             @SharedLocalizer["Register"]
         </a>
-        <a id="login" asp-area="Identity" asp-page="/Account/Login">
+        <a id="login" asp-area="Identity" asp-page="/Account/Login" class="nav__auth-link nav__auth-link--highlight">
             <i class="ri-login-circle-line"></i>
             @SharedLocalizer["SignIn"]
         </a>
     </div>
 }
+
+<style>
+    /* Styling to ensure the auth section looks clean */
+    .nav__auth, .nav__auth-guest {
+        display: flex;
+        align-items: center;
+        gap: 1.25rem;
+    }
+
+    .nav__user-link {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        text-decoration: none;
+        color: inherit;
+        transition: opacity 0.3s;
+    }
+
+        .nav__user-link:hover {
+            opacity: 0.8;
+        }
+
+    .nav__user-avatar {
+        width: 34px;
+        height: 34px;
+        background: linear-gradient(135deg, #fbbf24, #d97706);
+        color: #1c1008;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 700;
+        font-size: 0.85rem;
+    }
+
+    .nav__logout-btn {
+        background: none;
+        border: 1px solid rgba(255, 107, 107, 0.3);
+        color: #ff6b6b;
+        padding: 0.4rem 0.8rem;
+        border-radius: 6px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 0.4rem;
+        font-size: 0.9rem;
+        transition: all 0.3s ease;
+    }
+
+        .nav__logout-btn:hover {
+            background: #ff6b6b;
+            color: #fff;
+        }
+
+    .nav__auth-link {
+        display: flex;
+        align-items: center;
+        gap: 0.4rem;
+        text-decoration: none;
+        color: #fbbf24;
+        font-size: 0.95rem;
+    }
+
+    .nav__auth-link--highlight {
+        font-weight: 600;
+    }
+</style>

@@ -1,59 +1,204 @@
 ﻿@using Motorak.BLL.ModelVM.Rents
+@using Motorak.DAL.Enums.TransactionEnums
 @model IEnumerable<RentReadDto>
 
 @{
-    ViewData["Title"] = "Rents List";
-    Layout = "~/Views/Shared/_Layout.cshtml";
+    ViewData["Title"] = "Rental Management";
+    Layout = "_MotorakIndex";
 }
 
-<div class="container mt-4">
-    <h2 class="text-primary mb-4">📄 Rents List</h2>
+<style>
+    :root {
+        --gold: #fbbf24;
+        --gold-glow: rgba(251, 191, 36, 0.3);
+        --card-bg: rgba(15, 23, 42, 0.8);
+    }
 
-    <p>
-        <a asp-action="Create" class="btn btn-success">
-            <i class="bi bi-plus-circle"></i> Add New Rent
-        </a>
-    </p>
+    .rent-page {
+        min-height: 100vh;
+        padding: 3rem 0;
+        color: white;
+        position: relative;
+    }
 
-    <table class="table table-bordered table-striped">
-        <thead class="table-dark">
-            <tr>
-                <th>Start Date</th>
-                <th>End Date</th>
-                <th>Payment Method</th>
-                <th>Total Price</th>
-                <th>Status</th>
-                <th>Actions</th>
-            </tr>
-        </thead>
-        <tbody>
+        .rent-page::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            z-index: -1;
+            background: radial-gradient(circle at 10% 10%, rgba(251, 191, 36, 0.05), transparent 40%);
+        }
+
+    .page-title {
+        font-family: 'Exo 2', sans-serif;
+        font-size: 3rem;
+        font-weight: 900;
+        color: var(--gold);
+        text-transform: uppercase;
+        letter-spacing: -1px;
+    }
+
+    /* Stats Section */
+    .stats-container {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+        gap: 1.5rem;
+        margin-bottom: 3rem;
+    }
+
+    .stat-box {
+        background: var(--card-bg);
+        border: 1px solid rgba(251, 191, 36, 0.1);
+        border-radius: 20px;
+        padding: 1.5rem;
+        position: relative;
+        overflow: hidden;
+        backdrop-filter: blur(10px);
+    }
+
+        .stat-box::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 4px;
+            height: 100%;
+            background: var(--gold);
+        }
+
+    .stat-val {
+        font-size: 2.2rem;
+        font-weight: 900;
+        display: block;
+        color: #fff;
+    }
+
+    .stat-lab {
+        font-size: 0.8rem;
+        text-transform: uppercase;
+        color: var(--gold);
+        letter-spacing: 1px;
+    }
+
+    /* Modern Table Replacement */
+    .rent-grid {
+        display: grid;
+        gap: 1rem;
+    }
+
+    .rent-row {
+        background: rgba(30, 41, 59, 0.4);
+        border: 1px solid rgba(255,255,255,0.05);
+        border-radius: 16px;
+        padding: 1.2rem 2rem;
+        display: flex;
+        align-items: center;
+        transition: 0.3s;
+        backdrop-filter: blur(5px);
+    }
+
+        .rent-row:hover {
+            border-color: var(--gold);
+            transform: scale(1.01);
+            background: rgba(30, 41, 59, 0.7);
+        }
+
+    .status-badge {
+        padding: 6px 14px;
+        border-radius: 50px;
+        font-size: 0.75rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        border: 1px solid transparent;
+    }
+
+    .status-Completed {
+        background: rgba(16, 185, 129, 0.1);
+        color: #10b981;
+        border-color: #10b981;
+    }
+
+    .status-Pending {
+        background: rgba(245, 158, 11, 0.1);
+        color: #f59e0b;
+        border-color: #f59e0b;
+    }
+
+    .btn-circle {
+        width: 42px;
+        height: 42px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: rgba(255,255,255,0.05);
+        color: #fff;
+        transition: 0.3s;
+    }
+
+        .btn-circle:hover {
+            background: var(--gold);
+            color: #000;
+            transform: translateY(-3px);
+        }
+</style>
+
+<div class="rent-page">
+    <div class="container">
+        <div class="d-flex justify-content-between align-items-end mb-5">
+            <div>
+                <h1 class="page-title">Fleet Logs</h1>
+                <p class="text-muted mb-0">Live monitoring of all vehicle rentals</p>
+            </div>
+            <a asp-action="Create" class="btn btn-primary px-4 py-2" style="border-radius:12px; background:var(--gold); border:none; color:#000; font-weight:800;">
+                <i class="ri-add-line"></i> NEW RENTAL
+            </a>
+        </div>
+
+        <div class="stats-container">
+            <div class="stat-box">
+                <span class="stat-val">@Model.Count()</span>
+                <span class="stat-lab">Total Bookings</span>
+            </div>
+            <div class="stat-box">
+                <span class="stat-val">$@Model.Sum(x => x.TotalPrice).ToString("N0")</span>
+                <span class="stat-lab">Revenue Generated</span>
+            </div>
+            <div class="stat-box">
+                <span class="stat-val">@Model.Count(x => x.Status == TransactionStatus.Pending)</span>
+                <span class="stat-lab">Active Pending</span>
+            </div>
+        </div>
+
+        <div class="rent-grid">
             @foreach (var rent in Model)
             {
-                <tr>
-                    <td>@rent.StartDate.ToShortDateString()</td>
-                    <td>@rent.EndDate.ToShortDateString()</td>
-                    <td>@rent.PaymentMethod</td>
-                    <td>@rent.TotalPrice</td>
-                    <td>@rent.Status</td>
-                    <td>
-                        <a asp-action="Details" asp-route-id="@rent.Id" class="btn btn-info btn-sm">
-                            <i class="bi bi-eye"></i>
-                        </a>
-                        <a asp-action="Edit" asp-route-id="@rent.Id" class="btn btn-warning btn-sm">
-                            <i class="bi bi-pencil"></i>
-                        </a>
-                        <form asp-action="Delete" asp-route-id="@rent.Id" method="post" style="display:inline;">
-                            <button type="submit" class="btn btn-danger btn-sm">
-                                <i class="bi bi-trash"></i>
-                            </button>
-                        </form>
-                    </td>
-                </tr>
+                <div class="rent-row">
+                    <div style="flex: 1;">
+                        <div class="small text-muted">TRANSACTION ID</div>
+                        <div class="fw-bold">#@rent.Id.ToString("D5")</div>
+                    </div>
+                    <div style="flex: 2;">
+                        <div class="small text-muted">CUSTOMER & CAR</div>
+                        <div>CUST: @rent.CustomerId <span class="mx-2">|</span> CAR: @rent.CarId</div>
+                    </div>
+                    <div style="flex: 2;">
+                        <div class="small text-muted">DURATION</div>
+                        <div>@rent.StartDate.ToString("MMM dd") - @rent.EndDate.ToString("MMM dd")</div>
+                    </div>
+                    <div style="flex: 1.5;">
+                        <span class="status-badge status-@rent.Status">@rent.Status</span>
+                    </div>
+                    <div style="flex: 1;" class="text-end">
+                        <div class="fw-900" style="color:var(--gold)">$@rent.TotalPrice.ToString("N0")</div>
+                    </div>
+                    <div class="d-flex gap-2 ms-4">
+                        <a asp-action="Details" asp-route-id="@rent.Id" class="btn-circle"><i class="ri-eye-line"></i></a>
+                        <a asp-action="Edit" asp-route-id="@rent.Id" class="btn-circle"><i class="ri-edit-line"></i></a>
+                        <a asp-action="Delete" asp-route-id="@rent.Id" class="btn-circle text-danger"><i class="ri-delete-bin-line"></i></a>
+                    </div>
+                </div>
             }
-        </tbody>
-    </table>
+        </div>
+    </div>
 </div>
-
-@section Scripts {
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet" />
-}

@@ -1,11 +1,10 @@
-﻿using motorak.dal.Entites;
+﻿// motorak.dal/Entites/Transactions.cs
+using motorak.dal.Entites;
 using Motorak.DAL.Enums.TransactionEnums;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace motorak.dal.Entities
 {
-   
-
     public class Transactions
     {
         public int Id { get; private set; }
@@ -15,10 +14,10 @@ namespace motorak.dal.Entities
         public TransactionStatus Status { get; private set; }
 
         public DateTime CreatedAt { get; private set; }
-        public string CreatedBy { get; private set; } = "System";
+        public string CreatedBy { get;  set; } = "System";
 
         public DateTime? UpdatedAt { get; private set; }
-        public string? UpdatedBy { get; private set; }
+        public string? UpdatedBy { get;  set; }  // ← changed to protected
 
         public bool IsDeleted { get; private set; }
         public DateTime? DeletedAt { get; private set; }
@@ -32,10 +31,9 @@ namespace motorak.dal.Entities
         [ForeignKey(nameof(CarId))]
         public virtual Car Car { get; private set; }
 
-
         public Transactions() { }
 
-        public Transactions(string paymentMethod, decimal totalPrice, int customerId, int carId , string createdBy = "System")
+        public Transactions(string paymentMethod, decimal totalPrice, int customerId, int carId, string createdBy = "System")
         {
             if (string.IsNullOrWhiteSpace(paymentMethod))
                 throw new ArgumentException("Payment method is required.");
@@ -95,6 +93,7 @@ namespace motorak.dal.Entities
             DeletedAt = DateTime.Now;
             DeletedBy = deletedBy;
         }
+
         public void UpdateTransaction(string? newPaymentMethod, decimal? newPrice, TransactionStatus? newStatus, string updatedBy = "System")
         {
             if (newPrice.HasValue)
@@ -103,11 +102,12 @@ namespace motorak.dal.Entities
             if (!string.IsNullOrWhiteSpace(newPaymentMethod))
                 ChangePaymentMethod(newPaymentMethod, updatedBy);
 
-            if (newStatus.HasValue)
+            // Only change status if it's different and allowed
+            if (newStatus.HasValue && newStatus.Value != Status)
             {
-                if (newStatus == TransactionStatus.Completed)
+                if (newStatus.Value == TransactionStatus.Completed)
                     MarkAsCompleted(updatedBy);
-                else if (newStatus == TransactionStatus.Cancelled)
+                else if (newStatus.Value == TransactionStatus.Cancelled)
                     Cancel(updatedBy);
             }
 

@@ -1,8 +1,8 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿// motorak.dal/Repo/Implementations/PurchaseRepo.cs
+using Microsoft.EntityFrameworkCore;
 using motorak.DAL.DataBase;
 using Motorak.DAL.Entities;
 using Motorak.DAL.Repo.Abstractions;
-
 
 namespace Motorak.DAL.Repo.Implementations
 {
@@ -33,17 +33,24 @@ namespace Motorak.DAL.Repo.Implementations
 
         public async Task UpdateAsync(Purchase purchase)
         {
-            var existing = await _context.Purchases.FirstOrDefaultAsync(p => p.Id == purchase.Id && !p.IsDeleted);
+            var existing = await _context.Purchases
+                .FirstOrDefaultAsync(p => p.Id == purchase.Id && !p.IsDeleted);
             if (existing == null)
                 throw new InvalidOperationException("Purchase not found.");
 
-            existing.UpdateTransaction(purchase.PaymentMethod, purchase.TotalPrice, purchase.Status, purchase.UpdatedBy ?? "System");
+            existing.UpdateTransaction(
+                purchase.PaymentMethod,
+                purchase.TotalPrice,
+                purchase.Status,
+                "System"  
+            );
             await _context.SaveChangesAsync();
         }
 
         public async Task DeleteAsync(int id)
         {
-            var purchase = await _context.Purchases.FirstOrDefaultAsync(p => p.Id == id && !p.IsDeleted);
+            var purchase = await _context.Purchases
+                .FirstOrDefaultAsync(p => p.Id == id && !p.IsDeleted);
             if (purchase == null)
                 throw new InvalidOperationException("Purchase not found.");
 

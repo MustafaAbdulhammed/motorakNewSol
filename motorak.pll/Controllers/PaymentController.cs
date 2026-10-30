@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿// motorak.pll/Controllers/PaymentController.cs
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using motorak.bll.ModelVM.Payment;
@@ -34,6 +35,26 @@ namespace motorak.pll.Controllers
             _customerService = customerService;
         }
 
+        // ✅ Added missing GET Index action
+        [HttpGet]
+        public async Task<IActionResult> Index()
+        {
+            var userId = _userManager.GetUserId(User);
+            var cartItems = await _cartService.GetCartItemsAsync(userId);
+
+            if (!cartItems.Any())
+            {
+                TempData["Error"] = "Your cart is empty";
+                return RedirectToAction("Index", "Cart");
+            }
+
+            var total = await _cartService.GetCartTotalAsync(userId);
+            ViewBag.CartItems = cartItems;
+            ViewBag.TotalAmount = total;
+
+            return View();
+        }
+
         [HttpPost]
         public async Task<IActionResult> ProcessPayment([FromBody] ProcessPaymentRequest request)
         {
@@ -66,11 +87,10 @@ namespace motorak.pll.Controllers
                             {
                                 SellerName = "Motorak Store",
                                 PaymentMethod = request.PaymentMethod,
-                                TotalPrice = (int)item.TotalPrice,
+                                TotalPrice = item.TotalPrice,
                                 CustomerId = customer.Id,
                                 CarId = item.CarId
                             };
-
                             var purchaseId = await _purchaseService.CreateAsync(purchaseDto);
                             successfulTransactions.Add(purchaseId);
                         }
@@ -85,7 +105,6 @@ namespace motorak.pll.Controllers
                                 CustomerId = customer.Id,
                                 CarId = item.CarId
                             };
-
                             var rentId = await _rentService.CreateAsync(rentDto);
                             successfulTransactions.Add(rentId);
                         }
@@ -99,7 +118,6 @@ namespace motorak.pll.Controllers
                 if (successfulTransactions.Any())
                 {
                     await _cartService.ClearCartAsync(userId);
-
                     return Json(new
                     {
                         success = true,
@@ -118,7 +136,7 @@ namespace motorak.pll.Controllers
 
         private async Task<PaymentResult> ProcessPaymentSimulation(ProcessPaymentRequest request)
         {
-            await Task.Delay(1000);
+            await Task.Delay(500);
 
             if (string.IsNullOrEmpty(request.PaymentMethod))
                 return new PaymentResult { Success = false, Message = "Payment method is required" };
@@ -132,10 +150,6 @@ namespace motorak.pll.Controllers
                     return new PaymentResult { Success = false, Message = "Invalid CVV" };
             }
 
-            var random = new Random();
-            if (random.Next(1, 101) <= 5)
-                return new PaymentResult { Success = false, Message = "Payment declined by bank" };
-
             return new PaymentResult
             {
                 Success = true,
@@ -144,8 +158,4 @@ namespace motorak.pll.Controllers
             };
         }
     }
-
-    
-
-    
 }

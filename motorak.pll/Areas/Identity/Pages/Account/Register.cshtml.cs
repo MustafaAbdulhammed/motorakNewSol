@@ -123,6 +123,130 @@ namespace motorak.pll.Areas.Identity.Pages.Account
             ExternalLogins = (await _signInManager.GetExternalAuthenticationSchemesAsync()).ToList();
         }
 
+        //public async Task<IActionResult> OnPostAsync(string returnUrl = null)
+        //{
+        //    returnUrl ??= Url.Content("~/");
+        //    ExternalLogins = (await _signInManager.GetExternalAuthenticationSchemesAsync()).ToList();
+
+        //    // Recreate RoleList in case of validation errors
+        //    Input.RoleList = _roleManager.Roles.Where(r => r.Name != Seed.Role_Admin).Select(x => x.Name).Select(i => new SelectListItem
+        //    {
+        //        Text = i,
+        //        Value = i
+        //    });
+
+        //    // Custom validation for mechanic
+        //    if (Input.Role == Seed.Role_Mechanic && string.IsNullOrEmpty(Input.WorkHours))
+        //    {
+        //        ModelState.AddModelError("Input.WorkHours", "Working hours are required for mechanics.");
+        //    }
+
+        //    if (ModelState.IsValid)
+        //    {
+        //        using var transaction = await _context.Database.BeginTransactionAsync();
+        //        try
+        //        {
+        //            var user = CreateUser();
+        //            user.Name = Input.FullName;
+        //            user.PhoneNumber = Input.PhoneNumber;
+        //            user.CreatedAt = DateTime.Now;
+
+        //            await _userStore.SetUserNameAsync(user, Input.Email, CancellationToken.None);
+        //            await _emailStore.SetEmailAsync(user, Input.Email, CancellationToken.None);
+
+        //            var result = await _userManager.CreateAsync(user, Input.Password);
+
+        //            if (result.Succeeded)
+        //            {
+        //                _logger.LogInformation($"User created successfully with ID: {user.Id}");
+
+        //                // Add role
+        //                string roleToAssign = !string.IsNullOrEmpty(Input.Role) ? Input.Role : Seed.Role_Customer;
+        //                var roleResult = await _userManager.AddToRoleAsync(user, roleToAssign);
+
+        //                if (!roleResult.Succeeded)
+        //                {
+        //                    _logger.LogError($"Failed to assign role {roleToAssign} to user {user.Id}");
+        //                    // Don't fail the entire process for role assignment issues
+        //                }
+
+        //                // Create specific entity based on role
+        //                if (Input.Role == "Customer")
+        //                {
+        //                    var customer = new Customer
+        //                    {
+        //                        UserId = user.Id,
+        //                        User = user,
+        //                        CreatedAt = DateTime.Now
+        //                    };
+
+        //                    _context.Customers.Add(customer);
+        //                }
+        //                else if (Input.Role == "Mechanic")
+        //                {
+        //                    var mechanic = new Mechanic
+        //                    {
+        //                        UserId = user.Id,
+        //                        User = user,
+        //                        WorkHours = Input.WorkHours ?? "1"
+        //                    };
+        //                    _context.Mechanics.Add(mechanic);
+        //                }
+
+        //                // Save changes first
+        //                await _context.SaveChangesAsync();
+
+        //                // Commit transaction before sending email
+        //                await transaction.CommitAsync();
+
+        //                _logger.LogInformation($"User {user.Id} and related entities saved successfully");
+
+        //                // Generate confirmation email AFTER committing the transaction
+        //                var userId = await _userManager.GetUserIdAsync(user);
+        //                var code = await _userManager.GenerateEmailConfirmationTokenAsync(user);
+        //                code = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(code));
+
+        //                var callbackUrl = Url.Page(
+        //                    "/Account/ConfirmEmail",
+        //                    pageHandler: null,
+        //                    values: new { area = "Identity", userId = userId, code = code, returnUrl = returnUrl },
+        //                    protocol: Request.Scheme);
+
+        //                try
+        //                {
+        //                    var emailBody = EmailTemplate.GetEmailConfirmationTemplate(callbackUrl);
+        //                    await _emailSender.SendEmailAsync(Input.Email, "Confirm your Motorak account", emailBody);
+        //                    _logger.LogInformation($"Confirmation email sent to {Input.Email}");
+        //                }
+        //                catch (Exception emailEx)
+        //                {
+        //                    _logger.LogError(emailEx, $"Failed to send confirmation email to {Input.Email}");
+        //                    // Don't fail the registration if email sending fails
+        //                }
+
+        //                return RedirectToPage("RegisterConfirmation", new { email = Input.Email, returnUrl = returnUrl });
+        //            }
+        //            else
+        //            {
+        //                await transaction.RollbackAsync();
+        //                foreach (var error in result.Errors)
+        //                {
+        //                    _logger.LogError($"User creation error: {error.Description}");
+        //                    ModelState.AddModelError(string.Empty, error.Description);
+        //                }
+        //            }
+        //        }
+        //        catch (Exception ex)
+        //        {
+        //            await transaction.RollbackAsync();
+        //            _logger.LogError(ex, "Error occurred during user registration");
+        //            ModelState.AddModelError(string.Empty, "An error occurred during registration. Please try again.");
+        //        }
+        //    }
+
+        //    return Page();
+        //}
+        //simpler version without email verfication 
         public async Task<IActionResult> OnPostAsync(string returnUrl = null)
         {
             returnUrl ??= Url.Content("~/");
@@ -143,104 +267,65 @@ namespace motorak.pll.Areas.Identity.Pages.Account
 
             if (ModelState.IsValid)
             {
-                using var transaction = await _context.Database.BeginTransactionAsync();
-                try
+                var user = CreateUser();
+                user.Name = Input.FullName;
+                user.PhoneNumber = Input.PhoneNumber;
+                user.CreatedAt = DateTime.Now;
+
+                await _userStore.SetUserNameAsync(user, Input.Email, CancellationToken.None);
+                await _emailStore.SetEmailAsync(user, Input.Email, CancellationToken.None);
+
+                var result = await _userManager.CreateAsync(user, Input.Password);
+
+                if (result.Succeeded)
                 {
-                    var user = CreateUser();
-                    user.Name = Input.FullName;
-                    user.PhoneNumber = Input.PhoneNumber;
-                    user.CreatedAt = DateTime.Now;
+                    _logger.LogInformation($"User created successfully with ID: {user.Id}");
 
-                    await _userStore.SetUserNameAsync(user, Input.Email, CancellationToken.None);
-                    await _emailStore.SetEmailAsync(user, Input.Email, CancellationToken.None);
+                    // Add role
+                    string roleToAssign = !string.IsNullOrEmpty(Input.Role) ? Input.Role : Seed.Role_Customer;
+                    var roleResult = await _userManager.AddToRoleAsync(user, roleToAssign);
 
-                    var result = await _userManager.CreateAsync(user, Input.Password);
-
-                    if (result.Succeeded)
+                    if (!roleResult.Succeeded)
                     {
-                        _logger.LogInformation($"User created successfully with ID: {user.Id}");
-
-                        // Add role
-                        string roleToAssign = !string.IsNullOrEmpty(Input.Role) ? Input.Role : Seed.Role_Customer;
-                        var roleResult = await _userManager.AddToRoleAsync(user, roleToAssign);
-
-                        if (!roleResult.Succeeded)
-                        {
-                            _logger.LogError($"Failed to assign role {roleToAssign} to user {user.Id}");
-                            // Don't fail the entire process for role assignment issues
-                        }
-
-                        // Create specific entity based on role
-                        if (Input.Role == "Customer")
-                        {
-                            var customer = new Customer
-                            {
-                                UserId = user.Id,
-                                User = user,
-                                CreatedAt = DateTime.Now
-                            };
-
-                            _context.Customers.Add(customer);
-                        }
-                        else if (Input.Role == "Mechanic")
-                        {
-                            var mechanic = new Mechanic
-                            {
-                                UserId = user.Id,
-                                User = user,
-                                WorkHours = Input.WorkHours ?? "1"
-                            };
-                            _context.Mechanics.Add(mechanic);
-                        }
-
-                        // Save changes first
-                        await _context.SaveChangesAsync();
-
-                        // Commit transaction before sending email
-                        await transaction.CommitAsync();
-
-                        _logger.LogInformation($"User {user.Id} and related entities saved successfully");
-
-                        // Generate confirmation email AFTER committing the transaction
-                        var userId = await _userManager.GetUserIdAsync(user);
-                        var code = await _userManager.GenerateEmailConfirmationTokenAsync(user);
-                        code = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(code));
-
-                        var callbackUrl = Url.Page(
-                            "/Account/ConfirmEmail",
-                            pageHandler: null,
-                            values: new { area = "Identity", userId = userId, code = code, returnUrl = returnUrl },
-                            protocol: Request.Scheme);
-
-                        try
-                        {
-                            var emailBody = EmailTemplate.GetEmailConfirmationTemplate(callbackUrl);
-                            await _emailSender.SendEmailAsync(Input.Email, "Confirm your Motorak account", emailBody);
-                            _logger.LogInformation($"Confirmation email sent to {Input.Email}");
-                        }
-                        catch (Exception emailEx)
-                        {
-                            _logger.LogError(emailEx, $"Failed to send confirmation email to {Input.Email}");
-                            // Don't fail the registration if email sending fails
-                        }
-
-                        return RedirectToPage("RegisterConfirmation", new { email = Input.Email, returnUrl = returnUrl });
+                        _logger.LogError($"Failed to assign role {roleToAssign} to user {user.Id}");
                     }
-                    else
+
+                    // Create specific entity based on role
+                    if (Input.Role == "Customer")
                     {
-                        await transaction.RollbackAsync();
-                        foreach (var error in result.Errors)
+                        var customer = new Customer
                         {
-                            _logger.LogError($"User creation error: {error.Description}");
-                            ModelState.AddModelError(string.Empty, error.Description);
-                        }
+                            UserId = user.Id,
+                            User = user,
+                            CreatedAt = DateTime.Now
+                        };
+                        _context.Customers.Add(customer);
                     }
+                    else if (Input.Role == "Mechanic")
+                    {
+                        var mechanic = new Mechanic
+                        {
+                            UserId = user.Id,
+                            User = user,
+                            WorkHours = Input.WorkHours ?? "1"
+                        };
+                        _context.Mechanics.Add(mechanic);
+                    }
+
+                    await _context.SaveChangesAsync();
+
+                    // SIGN IN IMMEDIATELY - NO EMAIL CONFIRMATION NEEDED
+                    await _signInManager.SignInAsync(user, isPersistent: false);
+
+                    return LocalRedirect(returnUrl);
                 }
-                catch (Exception ex)
+                else
                 {
-                    await transaction.RollbackAsync();
-                    _logger.LogError(ex, "Error occurred during user registration");
-                    ModelState.AddModelError(string.Empty, "An error occurred during registration. Please try again.");
+                    foreach (var error in result.Errors)
+                    {
+                        _logger.LogError($"User creation error: {error.Description}");
+                        ModelState.AddModelError(string.Empty, error.Description);
+                    }
                 }
             }
 
